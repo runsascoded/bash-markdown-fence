@@ -5,7 +5,7 @@ from functools import partial
 from os import rename
 from os.path import basename, join
 from tempfile import TemporaryDirectory
-from typing import Generator, Callable
+from typing import Generator, Callable, Optional
 
 from click import command, option, argument
 from utz import process
@@ -42,7 +42,7 @@ def process_path(
 def out_fd(
     inplace: bool,
     path: str,
-    out_path: str | None,
+    out_path: Optional[str],
 ) -> Generator[Write, None, None]:
     if inplace:
         if out_path:
@@ -67,7 +67,7 @@ def out_fd(
 def main(
     inplace: bool,
     path: str,
-    out_path: str | None,
+    out_path: Optional[str],
 ):
     """Parse a Markdown file, updating blocks preceded by <!-- `[cmd...]` --> delimiters"""
     with out_fd(inplace, path, out_path) as out:
