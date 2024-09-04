@@ -32,6 +32,7 @@ def process_path(
                     close = "```"
                 else:
                     raise ValueError(f'Unexpected block start line under cmd {cmd}: {line}')
+                line = next(lines)
                 while line != close:
                     line = next(lines)
                 output = process.output(cmd).decode().rstrip('\n')
