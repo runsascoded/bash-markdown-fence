@@ -2,7 +2,7 @@ from utz.setup import setup
 
 setup(
     name="bmdf",
-    version="0.0.1",
+    version="0.0.2",
     entry_points={
         "console_scripts": [
             "bmd = bmdf.cli:bmd",

@@ -1,6 +1,8 @@
 # `bmdf`
 **B**ash **m**ark**d**own **f**encing
 
+![](https://img.shields.io/pypi/v/bmdf?label=bmdf&color=blue)
+
 This package provides 2 CLIs:
 - `bmd`: run commands, wrap output in Markdown fences
 - `mdcmd`: update Markdown files with command outputs
