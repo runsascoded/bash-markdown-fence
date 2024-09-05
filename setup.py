@@ -2,7 +2,7 @@ from utz.setup import setup
 
 setup(
     name="bmdf",
-    version="0.0.2",
+    version="0.0.3",
     entry_points={
         "console_scripts": [
             "bmd = bmdf.cli:bmd",
@@ -11,5 +11,6 @@ setup(
             "bmdfff = bmdf.cli:bmd_fff",
             "mdcmd = mdcmd.cli:main",
         ]
-    }
+    },
+    url="https://github.com/runsascoded/bash-markdown-fence",
 )
