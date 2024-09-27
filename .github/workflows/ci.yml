@@ -1,7 +1,7 @@
 name: Install, deploy to PyPI
 on:
   push:
-    tags: [ "**" ]
+    tags: "v*.*.*"
   workflow_dispatch:
 jobs:
   deploy:
@@ -16,7 +16,7 @@ jobs:
       run: pip install -e .
     - name: Verify README TOC is up to date
       run: |
-        mktoc
+        mktoc -i README.md
         if git diff --exit-code; then
           echo "README TOC is up to date."
         else
@@ -38,6 +38,6 @@ jobs:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
       run: |
-        pip install setuptools twine wheel
-        python setup.py sdist bdist_wheel
+        pip install build twine
+        python -m build
         twine upload dist/*

@@ -1,5 +1,5 @@
 # `bmdf`
-**B**ash **m**ark**d**own **f**encing
+**B**ash **m**ark**d**own **f**ences: embed commands, their output, and tables of contents in markdown 
 
 ![](https://img.shields.io/pypi/v/bmdf?label=bmdf&color=blue)
 
