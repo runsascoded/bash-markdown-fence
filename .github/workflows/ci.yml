@@ -14,6 +14,15 @@ jobs:
         cache: pip
     - name: Install bmdf
       run: pip install -e .
+    - name: Verify README TOC is up to date
+      run: |
+        mktoc
+        if git diff --exit-code; then
+          echo "README TOC is up to date."
+        else
+          echo "README TOC is out of date."
+          exit 1
+        fi
     - name: Verify README examples are up to date
       run: |
         mdcmd -i README.md
