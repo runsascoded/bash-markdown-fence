@@ -46,14 +46,15 @@ Put a placeholder like this in your README.md:
   ```
   ````
 
+then run…
+
 ### `mdcmd`: update command output <a id="mdcmd"></a>
 
-Then run:
 ```bash
 mdcmd -i README.md
 ```
 
-The placeholder block will now contain `seq 3` and its output; that's how first block above is rendered!
+The placeholder block above will now contain `seq 3` and its output; that's how first block above is rendered!
 
 The full README.md block will now look like:
   ````
