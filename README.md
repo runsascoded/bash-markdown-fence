@@ -5,12 +5,13 @@
 
 <!-- toc -->
 - [Install](#install)
-- [Examples](#examples)
+- [Usage](#usage)
     - [`bmdf`: embed `bash` commands in README](#bmdf)
     - [`mdcmd`: update command output](#mdcmd)
     - [`bmdfff`: &lt;details&gt; mode](#bmdfff)
     - [`mktoc`: update table of contents](#mktoc)
-- [Reference](#reference)
+    - [Reference](#reference)
+- [Examples](#examples)
 <!-- /toc -->
 
 This package provides 3 CLIs:
@@ -23,7 +24,7 @@ This package provides 3 CLIs:
 pip install bmdf
 ```
 
-## Examples <a id="examples"></a>
+## Usage <a id="usage"></a>
 
 ### `bmdf`: embed `bash` commands in README <a id="bmdf"></a>
 
@@ -124,7 +125,7 @@ mktoc -i README.md
 
 And the `<!-- toc  -->` section will have a table of contents injected (like the one at the top of this file).
 
-## Reference <a id="reference"></a>
+### Reference <a id="reference"></a>
 
 <!-- `bmdf bmd` -->
 ```bash
@@ -172,3 +173,11 @@ mktoc --help
 #   --help                     Show this message and exit.
 ```
 (these blocks are self-hosted, using `bmdf` and `mdcmd` 😎)
+
+## Examples <a id="examples"></a>
+- [runsascoded/utz]
+- [TileDB-Inc/scverse-ml-workshop-2024]
+
+
+[runsascoded/utz]: https://github.com/runsascoded/utz?tab=readme-ov-file#utz
+[TileDB-Inc/scverse-ml-workshop-2024]: https://github.com/TileDB-Inc/scverse-ml-workshop-2024?tab=readme-ov-file#training-models-on-atlas-scale-single-cell-datasets
