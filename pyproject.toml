@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["bmdf", "mdcmd", "mktoc"]
+packages = ["bmdf", "bmdf.cli", "mdcmd", "mdcmd.cli", "mktoc", "mktoc.cli"]
 
 [project.scripts]
 bmd = "bmdf.cli:bmd"
