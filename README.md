@@ -3,6 +3,7 @@
 
 ![](https://img.shields.io/pypi/v/bmdf?label=bmdf&color=blue)
 
+<a id="toc"></a>
 <!-- toc -->
 - [Install](#install)
 - [Usage](#usage)
@@ -52,7 +53,10 @@ then run…
 ### `mdcmd`: update command output <a id="mdcmd"></a>
 
 ```bash
+# Modify README.md in-place
 mdcmd -i README.md
+# Same as above; no args defaults to `-i README.md`
+mdcmd
 ```
 
 The placeholder block above will now contain `seq 3` and its output; that's how first block above is rendered!
@@ -68,7 +72,7 @@ The full README.md block will now look like:
   ```
   ````
 
-and running `mdcmd -i README.md` again will rewrite the same content.
+and running `mdcmd` again will rewrite the same content.
 
 Note: `bmdf` (alias for `bmd -f`) is used because it wraps the output of whatever it's passed in a "Bash fence" block. You don't have to use it, but most commands will fail to output a Markdown "fence" block, and subsequent `mdcmd` invocations will fail to parse them.
 
@@ -120,7 +124,10 @@ Then put empty `<a>` tags next to the headings you want to include, e.g.:
 
 Then run:
 ```bash
+# Modify README.md in-place
 mktoc -i README.md
+# Same as above; no args defaults to `-i README.md`
+mktoc
 ```
 
 And the `<!-- toc  -->` section will have a table of contents injected (like the one at the top of this file).
@@ -147,32 +154,40 @@ bmd
 #   --help         Show this message and exit.
 ```
 
-<!-- `bmdf mdcmd` -->
+<!-- `bmdf -- mdcmd --help` -->
 ```bash
-mdcmd
-# Usage: mdcmd [OPTIONS] PATH [OUT_PATH]
+mdcmd --help
+# Usage: mdcmd [OPTIONS] [PATH] [OUT_PATH]
 #
 #   Parse a Markdown file, updating blocks preceded by <!-- `[cmd...]` -->
-#   delimiters
+#   delimiters.
+#
+#   If no paths are provided, will look for a README.md, and operate "in-place"
+#   (same as ``mdcmd -i README.md``).
 #
 # Options:
-#   -i, --inplace  Update the file in place
-#   --help         Show this message and exit.
+#   -i, --inplace / -I, --no-inplace
+#                                   Update the file in place
+#   --help                          Show this message and exit.
 ```
 
 <!-- `bmdf -- mktoc --help` -->
 ```bash
 mktoc --help
-# Usage: mktoc [OPTIONS] [FILE]
+# Usage: mktoc [OPTIONS] [PATH] [OUT_PATH]
 #
 #   Build a table of contents from a markdown file.
 #
+#   If no path is provided, will look for a README.md, and operate "in-place"
+#   (same as ``mdcmd -i README.md``).
+#
 # Options:
-#   -i, --in-place             Edit the file in-place
-#   -n, --indent-size INTEGER  Indent size (spaces)
-#   --help                     Show this message and exit.
+#   -i, --inplace / -I, --no-inplace
+#                                   Edit the file in-place
+#   -n, --indent-size INTEGER       Indent size (spaces)
+#   --help                          Show this message and exit.
 ```
-(these blocks are self-hosted, using `bmdf` and `mdcmd` 😎)
+(these blocks are self-hosted, using `bmdf` and `mdcmd`; likewise [the table of contents up top](#toc), via `mktoc` 😎)
 
 ## Examples <a id="examples"></a>
 - [runsascoded/utz]

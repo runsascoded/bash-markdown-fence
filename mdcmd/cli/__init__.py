@@ -2,8 +2,8 @@ import re
 import shlex
 from contextlib import contextmanager
 from functools import partial
-from os import rename
-from os.path import basename, join
+from os import environ as env, rename
+from os.path import basename, join, exists
 from tempfile import TemporaryDirectory
 from typing import Generator, Callable, Optional
 
@@ -11,8 +11,10 @@ from click import command, option, argument
 from utz import process
 
 RGX = re.compile(r'<!-- `(?P<cmd>[^`]+)` -->')
-Write = Callable[..., None]
+Write = Callable[[str], None]
 
+DEFAULT_FILE_ENV_VAR = 'MDCMD_DEFAULT_PATH'
+DEFAULT_FILE = 'README.md'
 
 def process_path(
     path: str,
@@ -61,16 +63,26 @@ def out_fd(
                 yield partial(print, file=f)
 
 
-@command(no_args_is_help=True)
-@option('-i', '--inplace', is_flag=True, help='Update the file in place')
-@argument('path')
+@command('mdcmd')
+@option('-i/-I', '--inplace/--no-inplace', is_flag=True, default=None, help='Update the file in place')
+@argument('path', required=False)
 @argument('out_path', required=False)
 def main(
-    inplace: bool,
+    inplace: Optional[bool],
     path: str,
     out_path: Optional[str],
 ):
-    """Parse a Markdown file, updating blocks preceded by <!-- `[cmd...]` --> delimiters"""
+    """Parse a Markdown file, updating blocks preceded by <!-- `[cmd...]` --> delimiters.
+
+    If no paths are provided, will look for a README.md, and operate "in-place" (same as ``mdcmd -i README.md``).
+    """
+    if not path:
+        path = env.get(DEFAULT_FILE_ENV_VAR, DEFAULT_FILE)
+        if not exists(path):
+            raise ValueError(f'{path} not found')
+        if inplace is None:
+            inplace = True
+
     with out_fd(inplace, path, out_path) as out:
         process_path(path, out)
 
