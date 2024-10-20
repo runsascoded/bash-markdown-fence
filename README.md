@@ -1,7 +1,7 @@
 # `bmdf`
 **B**ash **m**ark**d**own **f**ences: embed commands, their output, and tables of contents in markdown 
 
-![](https://img.shields.io/pypi/v/bmdf?label=bmdf&color=blue)
+[![](https://img.shields.io/pypi/v/bmdf?label=bmdf&color=blue)][bmdf]
 
 <a id="toc"></a>
 <!-- toc -->
@@ -196,3 +196,4 @@ mktoc --help
 
 [runsascoded/utz]: https://github.com/runsascoded/utz?tab=readme-ov-file#utz
 [TileDB-Inc/scverse-ml-workshop-2024]: https://github.com/TileDB-Inc/scverse-ml-workshop-2024?tab=readme-ov-file#training-models-on-atlas-scale-single-cell-datasets
+[bmdf]: https://pypi.org/project/bmdf/
