@@ -7,17 +7,20 @@
 <!-- toc -->
 - [Install](#install)
 - [Usage](#usage)
-    - [`bmdf`: embed `bash` commands in README](#bmdf)
-    - [`mdcmd`: update command output](#mdcmd)
-    - [`bmdfff`: &lt;details&gt; mode](#bmdfff)
+    - [`bmd`: format `bash` command and output as Markdown](#bmd)
+        - [`bmdf` (`bmd -f`): command+output mode](#bmdf)
+        - [`bmdff` (`bmd -ff`): two-fence mode](#bmdff)
+        - [`bmdfff` (`bmd -fff`): &lt;details&gt; mode](#bmdfff)
+    - [`mdcmd`: update commands embedded in Markdown files](#mdcmd)
     - [`mktoc`: update table of contents](#mktoc)
     - [Reference](#reference)
 - [Examples](#examples)
 <!-- /toc -->
 
 This package provides 3 CLIs:
-- `bmd`: run commands, wrap output in Markdown fences
-- `mdcmd`: update Markdown files with command outputs
+- `bmd`: run Bash commands, wrap output for Markdown embedding
+  - [`bmdf`](#bmdf), [`bmdff`](#bmdff), [`bmdfff`](#bmdfff): different levels of "fencing" for command output
+- `mdcmd`: find `bmd` blocks in Markdown files, execute commands, update Markdown files with output
 - `mktoc`: update Markdown table of contents (with custom "id" anchors)
 
 ## Install <a id="install"></a>
@@ -27,7 +30,11 @@ pip install bmdf
 
 ## Usage <a id="usage"></a>
 
-### `bmdf`: embed `bash` commands in README <a id="bmdf"></a>
+### `bmd`: format `bash` command and output as Markdown <a id="bmd"></a>
+
+`bmd` (and aliases [`bmdf`](#bmdf), [`bmdff`](#bmdff), [`bmdfff`](#bmdfff)) takes a `bash` command as input, and renders the command and/or its output in various Markdown-friendly formats:
+
+#### `bmdf` (`bmd -f`): command+output mode <a id="bmdf"></a>
 
 Suppose you want to embed a command and its output in a README.md, like this:
 
@@ -44,13 +51,61 @@ seq 3
 Put a placeholder like this in your README.md:
   ````
   <!-- `bmdf seq 3` -->
-  ```
-  ```
   ````
 
-then run…
+then [run `mdcmd`](#mdcmd) to update your README containing this embedded command block.
 
-### `mdcmd`: update command output <a id="mdcmd"></a>
+#### `bmdff` (`bmd -ff`): two-fence mode <a id="bmdff"></a>
+`bmdff` (alias for `bmd -ff`) renders two code fences, one with the Bash command (syntax-highlighted appropriately), and a second (non-highlighted) block with the output, e.g.:
+
+  ````
+  <!-- `bmdff seq 5` -->
+  ````
+
+becomes:
+
+<!-- `bmdff seq 5` -->
+```bash
+seq 5
+```
+```
+1
+2
+3
+4
+5
+```
+
+#### `bmdfff` (`bmd -fff`): &lt;details&gt; mode <a id="bmdfff"></a>
+
+When a command's output is large, rendering it as a `<details><summary>` (with the output collapsed, by default) may be preferable.
+
+`bmdfff` (3 `f`s, alias for `bmd -fff`) transforms placeholders like this:
+
+  ````
+  <!-- `bmdfff seq 10` -->
+  ````
+
+to:
+
+<!-- `bmdfff seq 10` -->
+<details><summary><code>seq 10</code></summary>
+
+```
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+```
+</details>
+
+### `mdcmd`: update commands embedded in Markdown files <a id="mdcmd"></a>
 
 ```bash
 # Modify README.md in-place
@@ -75,37 +130,6 @@ The full README.md block will now look like:
 and running `mdcmd` again will rewrite the same content.
 
 Note: `bmdf` (alias for `bmd -f`) is used because it wraps the output of whatever it's passed in a "Bash fence" block. You don't have to use it, but most commands will fail to output a Markdown "fence" block, and subsequent `mdcmd` invocations will fail to parse them.
-
-### `bmdfff`: &lt;details&gt; mode <a id="bmdfff"></a>
-
-In some cases, it's preferable to render the command as a `<details><summary>`, with the output hidden by default.
-
-`bmdfff` (3 `f`s, alias for `bmd -fff`) achieves this; a markdown section like this:
-
-````
-  <!-- `bmdfff seq 10` -->
-  ```
-  ```
-````
-
-gets replaced with this:
-
-<!-- `bmdfff seq 10` -->
-<details><summary><code>seq 10</code></summary>
-
-```
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-```
-</details>
 
 ### `mktoc`: update table of contents <a id="mktoc"></a>
 Put a block like this in your README.md:
@@ -187,6 +211,7 @@ mktoc --help
 #   -n, --indent-size INTEGER       Indent size (spaces)
 #   --help                          Show this message and exit.
 ```
+
 (these blocks are self-hosted, using `bmdf` and `mdcmd`; likewise [the table of contents up top](#toc), via `mktoc` 😎)
 
 ## Examples <a id="examples"></a>

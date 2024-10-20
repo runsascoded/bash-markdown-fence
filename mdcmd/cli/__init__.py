@@ -1,6 +1,7 @@
 import re
 import shlex
 from contextlib import contextmanager
+from fileinput import close
 from functools import partial
 from os import environ as env, rename
 from os.path import basename, join, exists
@@ -29,16 +30,27 @@ def process_path(
                 cmd = shlex.split(m.group('cmd'))
                 line = next(lines)
                 if line.startswith("<details>"):
-                    close = "</details>"
+                    close_lines = ["</details>"]
                 elif line.startswith("```"):
-                    close = "```"
+                    if cmd[0] == "bmdff":
+                        close_lines = ["```"] * 3  # Skip two fences
+                    else:
+                        close_lines = ["```"]
+                elif not line:
+                    close_lines = None
                 else:
                     raise ValueError(f'Unexpected block start line under cmd {cmd}: {line}')
-                line = next(lines)
-                while line != close:
+
+                while close_lines:
+                    close = close_lines.pop(0)
                     line = next(lines)
+                    while line != close:
+                        line = next(lines)
+
                 output = process.output(cmd).decode().rstrip('\n')
                 write(output)
+                if close_lines is None:
+                    write("")
 
 
 @contextmanager
