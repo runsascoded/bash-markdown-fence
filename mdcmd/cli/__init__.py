@@ -43,21 +43,24 @@ def process_path(
                 continue
 
             cmd = shlex.split(cmd_str)
-            line = next(lines)
-            if line.startswith("<details>"):
-                close_lines = ["</details>"]
-            elif line.startswith("```"):
-                if cmd[0] == "bmdff":
-                    close_lines = ["```"] * 3  # Skip two fences
+            try:
+                line = next(lines)
+                if line.startswith("<details>"):
+                    close_lines = ["</details>"]
+                elif line.startswith("```"):
+                    if cmd[0] == "bmdff":
+                        close_lines = ["```"] * 3  # Skip two fences
+                    else:
+                        close_lines = ["```"]
+                elif not line:
+                    close_lines = None
                 else:
-                    close_lines = ["```"]
-            elif not line:
+                    raise ValueError(f'Unexpected block start line under cmd {cmd}: {line}')
+            except StopIteration:
                 close_lines = None
-            else:
-                raise ValueError(f'Unexpected block start line under cmd {cmd}: {line}')
 
             while close_lines:
-                close = close_lines.pop(0)
+                close, *close_lines = close_lines
                 line = next(lines)
                 while line != close:
                     line = next(lines)
