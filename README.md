@@ -238,10 +238,18 @@ mktoc --help
 (these blocks are self-hosted, using `bmdf` and `mdcmd`; likewise [the table of contents up top](#toc), via `mktoc` 😎)
 
 ## Examples <a id="examples"></a>
+- [runsascoded/juq]
 - [runsascoded/utz]
+- [runsascoded/dvc-utils]
+- [ryan-williams/git-helpers]
+- [ryan-williams/tdbs-dask]
 - [TileDB-Inc/scverse-ml-workshop-2024]
-
 
 [runsascoded/utz]: https://github.com/runsascoded/utz?tab=readme-ov-file#utz
 [TileDB-Inc/scverse-ml-workshop-2024]: https://github.com/TileDB-Inc/scverse-ml-workshop-2024?tab=readme-ov-file#training-models-on-atlas-scale-single-cell-datasets
+[ryan-williams/tdbs-dask]: https://github.com/ryan-williams/tdbs-dask?tab=readme-ov-file#tdbs-dask
+[ryan-williams/git-helpers]: https://github.com/ryan-williams/git-helpers?tab=readme-ov-file#git-helpers
+[runsascoded/dvc-utils]: https://github.com/runsascoded/dvc-utils
+[runsascoded/juq]: https://github.com/runsascoded/juq
+
 [bmdf]: https://pypi.org/project/bmdf/
