@@ -192,6 +192,8 @@ mdcmd --help
 # Options:
 #   -i, --inplace / -I, --no-inplace
 #                                   Update the file in place
+#   -n, --dry-run                   Print the commands that would be run, but
+#                                   don't execute them
 #   -x, --execute TEXT              Only execute commands that match these
 #                                   regular expressions
 #   -X, --exclude TEXT              Only execute commands that don't match these

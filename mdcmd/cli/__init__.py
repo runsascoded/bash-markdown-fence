@@ -8,7 +8,7 @@ from tempfile import TemporaryDirectory
 from typing import Generator, Callable, Optional, Tuple
 
 from click import command, option, argument
-from utz import process
+from utz import process, err
 
 RGX = re.compile(r'<!-- `(?P<cmd>[^`]+)` -->')
 Write = Callable[[str], None]
@@ -18,6 +18,7 @@ DEFAULT_FILE = 'README.md'
 
 def process_path(
     path: str,
+    dry_run: bool,
     include_rgxs: Tuple[str, ...],
     exclude_rgxs: Tuple[str, ...],
     write: Write,
@@ -36,6 +37,10 @@ def process_path(
             if exclude_rgxs:
                 if any(re.search(rgx, cmd_str) for rgx in exclude_rgxs):
                     continue
+
+            if dry_run:
+                err(f"Would run: {cmd_str}")
+                continue
 
             cmd = shlex.split(cmd_str)
             line = next(lines)
@@ -87,12 +92,14 @@ def out_fd(
 
 @command('mdcmd')
 @option('-i/-I', '--inplace/--no-inplace', is_flag=True, default=None, help='Update the file in place')
+@option('-n', '--dry-run', is_flag=True, help="Print the commands that would be run, but don't execute them")
 @option('-x', '--execute', 'include_rgxs', multiple=True, help='Only execute commands that match these regular expressions')
 @option('-X', '--exclude', 'exclude_rgxs', multiple=True, help="Only execute commands that don't match these regular expressions")
 @argument('path', required=False)
 @argument('out_path', required=False)
 def main(
     inplace: Optional[bool],
+    dry_run: bool,
     include_rgxs: Tuple[str, ...],
     exclude_rgxs: Tuple[str, ...],
     path: str,
@@ -112,6 +119,7 @@ def main(
     with out_fd(inplace, path, out_path) as write:
         process_path(
             path=path,
+            dry_run=dry_run,
             include_rgxs=include_rgxs,
             exclude_rgxs=exclude_rgxs,
             write=write,
