@@ -1,12 +1,11 @@
 import re
 import shlex
 from contextlib import contextmanager
-from fileinput import close
 from functools import partial
 from os import environ as env, rename
 from os.path import basename, join, exists
 from tempfile import TemporaryDirectory
-from typing import Generator, Callable, Optional
+from typing import Generator, Callable, Optional, Tuple
 
 from click import command, option, argument
 from utz import process
@@ -19,38 +18,49 @@ DEFAULT_FILE = 'README.md'
 
 def process_path(
     path: str,
+    include_rgxs: Tuple[str, ...],
+    exclude_rgxs: Tuple[str, ...],
     write: Write,
 ):
-    with open(path, 'r') as lines:
-        lines = map(lambda line: line.rstrip('\n'), lines)
+    with open(path, 'r') as fd:
+        lines = map(lambda line: line.rstrip('\n'), fd)
         for line in lines:
             write(line)
-            m = RGX.match(line)
-            if m:
-                cmd = shlex.split(m.group('cmd'))
-                line = next(lines)
-                if line.startswith("<details>"):
-                    close_lines = ["</details>"]
-                elif line.startswith("```"):
-                    if cmd[0] == "bmdff":
-                        close_lines = ["```"] * 3  # Skip two fences
-                    else:
-                        close_lines = ["```"]
-                elif not line:
-                    close_lines = None
+            if not (m := RGX.match(line)):
+                continue
+
+            cmd_str = m.group('cmd')
+            if include_rgxs:
+                if not any(re.search(rgx, cmd_str) for rgx in include_rgxs):
+                    continue
+            if exclude_rgxs:
+                if any(re.search(rgx, cmd_str) for rgx in exclude_rgxs):
+                    continue
+
+            cmd = shlex.split(cmd_str)
+            line = next(lines)
+            if line.startswith("<details>"):
+                close_lines = ["</details>"]
+            elif line.startswith("```"):
+                if cmd[0] == "bmdff":
+                    close_lines = ["```"] * 3  # Skip two fences
                 else:
-                    raise ValueError(f'Unexpected block start line under cmd {cmd}: {line}')
+                    close_lines = ["```"]
+            elif not line:
+                close_lines = None
+            else:
+                raise ValueError(f'Unexpected block start line under cmd {cmd}: {line}')
 
-                while close_lines:
-                    close = close_lines.pop(0)
+            while close_lines:
+                close = close_lines.pop(0)
+                line = next(lines)
+                while line != close:
                     line = next(lines)
-                    while line != close:
-                        line = next(lines)
 
-                output = process.output(cmd).decode().rstrip('\n')
-                write(output)
-                if close_lines is None:
-                    write("")
+            output = process.output(cmd).decode().rstrip('\n')
+            write(output)
+            if close_lines is None:
+                write("")
 
 
 @contextmanager
@@ -77,10 +87,14 @@ def out_fd(
 
 @command('mdcmd')
 @option('-i/-I', '--inplace/--no-inplace', is_flag=True, default=None, help='Update the file in place')
+@option('-x', '--execute', 'include_rgxs', multiple=True, help='Only execute commands that match these regular expressions')
+@option('-X', '--exclude', 'exclude_rgxs', multiple=True, help="Only execute commands that don't match these regular expressions")
 @argument('path', required=False)
 @argument('out_path', required=False)
 def main(
     inplace: Optional[bool],
+    include_rgxs: Tuple[str, ...],
+    exclude_rgxs: Tuple[str, ...],
     path: str,
     out_path: Optional[str],
 ):
@@ -95,8 +109,13 @@ def main(
         if inplace is None:
             inplace = True
 
-    with out_fd(inplace, path, out_path) as out:
-        process_path(path, out)
+    with out_fd(inplace, path, out_path) as write:
+        process_path(
+            path=path,
+            include_rgxs=include_rgxs,
+            exclude_rgxs=exclude_rgxs,
+            write=write,
+        )
 
 
 if __name__ == '__main__':
