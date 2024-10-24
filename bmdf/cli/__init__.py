@@ -1,6 +1,7 @@
 import shlex
 import sys
 from subprocess import PIPE, Popen
+from typing import Optional, Tuple
 
 from click import argument, command, option, get_current_context, echo
 from utz import process
@@ -11,13 +12,22 @@ from bmdf.utils import COPY_BINARIES, details, fence
 @command("fence", no_args_is_help=True)
 @option('-C', '--no-copy', is_flag=True, help=f'Disable copying output to clipboard (normally uses first available executable from {COPY_BINARIES}')
 @option('-f', '--fence', 'fence_level', count=True, help='Pass 0-3x to configure output style: 0x: print output lines, prepended by "# "; 1x: print a "```bash" fence block including the <command> and commented output lines; 2x: print a bash-fenced command followed by plain-fenced output lines; 3x: print a <details/> block, with command <summary/> and collapsed output lines in a plain fence.')
-@argument('command', nargs=-1)
-def bmd(no_copy, fence_level, command):
+@argument('command', required=True, nargs=-1)
+def bmd(
+    no_copy: bool,
+    fence_level: int,
+    command: Tuple[str, ...],
+):
     """Format a command and its output to markdown, either in a `bash`-fence or <details> block, and copy it to the clipboard."""
     if not command:
         ctx = get_current_context()
         echo(ctx.get_help())
         ctx.exit()
+
+    if command[0] == 'time':
+        # Without `-p`, `time`'s output is not POSIX-compliant, doesn't get parsed properly
+        if len(command) > 1 and not command[1].startswith('-'):
+            command = [ command[0], '-p', *command[1:] ]
 
     lines = process.lines(*command, log=None, both=True, err_ok=True)
     cmd_str = shlex.join(command)

@@ -161,7 +161,7 @@ And the `<!-- toc  -->` section will have a table of contents injected (like the
 <!-- `bmdf bmd` -->
 ```bash
 bmd
-# Usage: bmd [OPTIONS] [COMMAND]...
+# Usage: bmd [OPTIONS] COMMAND...
 #
 #   Format a command and its output to markdown, either in a `bash`-fence or
 #   <details> block, and copy it to the clipboard.
