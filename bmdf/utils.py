@@ -1,6 +1,9 @@
 from contextlib import contextmanager
 from typing import Callable
 
+from click import option
+from utz import check, process, err
+
 Log = Callable[..., None]
 
 
@@ -27,3 +30,20 @@ def details(summary: str = None, code: str = None, log: Log = print):
 COPY_BINARIES = [ 'pbcopy', 'xclip', 'clip', ]
 
 
+amend_opt = option('-a', '--amend', is_flag=True, help="Squash changes onto the previous Git commit; suitable for use with `git rebase -x`")
+inplace_opt = option('-i/-I', '--inplace/--no-inplace', is_flag=True, default=None, help="Edit the file in-place")
+
+
+def amend_check(amend: bool):
+    if amend:
+        if not check('git', 'diff', '--quiet', 'HEAD'):
+            raise RuntimeError("Require clean Git worktree for `-a/--amend`")
+
+
+def amend_run(amend: bool) -> None:
+    if amend:
+        if not check('git', 'diff', '--quiet', 'HEAD'):
+            err("Squashing changes onto HEAD")
+            process.run('git', 'commit', '-a', '--amend', '--no-edit')
+        else:
+            err("No changes found")

@@ -196,11 +196,10 @@ mdcmd --help
 #   (same as ``mdcmd -i README.md``).
 #
 # Options:
-#   -a, --amend                     Squash changes onto the previous Git commit
-#                                   (can be used with `git rebase -x 'mdcmd
-#                                   -a'`)
+#   -a, --amend                     Squash changes onto the previous Git commit;
+#                                   suitable for use with `git rebase -x`
 #   -i, --inplace / -I, --no-inplace
-#                                   Update the file in place
+#                                   Edit the file in-place
 #   -n, --dry-run                   Print the commands that would be run, but
 #                                   don't execute them
 #   -x, --execute TEXT              Only execute commands that match these
@@ -217,8 +216,8 @@ mktoc --help
 #
 #   Insert a table of contents (TOC) in a markdown file.
 #
-#   Looks for a pair of sentinel lines to insert or update the TOC between: ```
-#   <!-- toc --> <!-- /toc --> ```
+#   Looks for a pair of sentinel lines to insert or update the TOC between:
+#   ``<!-- toc -->``, ``<!-- /toc -->``.
 #
 #   If an empty line follows the opening ``<!-- toc -->`` line, the TOC will be
 #   inserted there (along with the closing sentinel); this is useful when
@@ -228,6 +227,8 @@ mktoc --help
 #   if ``mktoc -i README.md`` was passed).
 #
 # Options:
+#   -a, --amend                     Squash changes onto the previous Git commit;
+#                                   suitable for use with `git rebase -x`
 #   -i, --inplace / -I, --no-inplace
 #                                   Edit the file in-place
 #   -n, --indent-size INTEGER       Indent size (spaces)

@@ -7,6 +7,7 @@ from typing import Optional
 
 from click import argument, command, option, UsageError
 
+from bmdf.utils import amend_opt, amend_check, amend_run, inplace_opt
 from mdcmd.cli import out_fd, Write
 
 RGX = r'(?P<level>#{2,}) (?P<title>.*) <a id="(?P<id>[^"]+)"></a>'
@@ -17,11 +18,13 @@ TOC_START = '<!-- toc -->'
 TOC_END = '<!-- /toc -->'
 
 @command("mktoc")
-@option('-i/-I', '--inplace/--no-inplace', is_flag=True, default=None, help="Edit the file in-place")
+@amend_opt
+@inplace_opt
 @option('-n', '--indent-size', type=int, default=4, help="Indent size (spaces)")
 @argument('path', required=False)
 @argument('out_path', required=False)
 def main(
+    amend: bool,
     inplace: Optional[bool],
     indent_size: int,
     path: Optional[str],
@@ -29,11 +32,7 @@ def main(
 ):
     """Insert a table of contents (TOC) in a markdown file.
 
-    Looks for a pair of sentinel lines to insert or update the TOC between:
-    ```
-    <!-- toc -->
-    <!-- /toc -->
-    ```
+    Looks for a pair of sentinel lines to insert or update the TOC between: ``<!-- toc -->``, ``<!-- /toc -->``.
 
     If an empty line follows the opening ``<!-- toc -->`` line, the TOC will be inserted there (along with the closing
     sentinel); this is useful when initially generating a TOC.
@@ -47,6 +46,8 @@ def main(
 
     if not exists(path):
         raise UsageError(f'{path} not found')
+
+    amend_check(amend)
 
     with open(path, 'r') as f:
         lines = [ line.rstrip('\n') for line in f.readlines() ]
@@ -87,6 +88,8 @@ def main(
 
         for line in rest:
             out(line)
+
+    amend_run(amend)
 
 
 if __name__ == '__main__':
