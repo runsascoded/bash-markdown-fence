@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 from os import environ as env
 from os.path import exists
@@ -25,9 +27,18 @@ def main(
     path: Optional[str],
     out_path: Optional[str],
 ):
-    """Build a table of contents from a markdown file.
+    """Insert a table of contents (TOC) in a markdown file.
 
-    If no path is provided, will look for a README.md, and operate "in-place" (same as ``mdcmd -i README.md``).
+    Looks for a pair of sentinel lines to insert or update the TOC between:
+    ```
+    <!-- toc -->
+    <!-- /toc -->
+    ```
+
+    If an empty line follows the opening ``<!-- toc -->`` line, the TOC will be inserted there (along with the closing
+    sentinel); this is useful when initially generating a TOC.
+
+    If no ``out_path`` is provided, will operate "in-place" on ``README.md`` (as if ``mktoc -i README.md`` was passed).
     """
     if not path:
         path = env.get(DEFAULT_FILE_ENV_VAR, DEFAULT_FILE)
@@ -54,21 +65,26 @@ def main(
     with out_fd(inplace, path, out_path) as out:
         lines_iter = iter(lines)
 
-        def scan(marker: str, name: str, write: bool = False):
+        def scan(markers: str | list[str], name: str, write: bool = False):
+            if isinstance(markers, str):
+                markers = [markers]
             for line in lines_iter:
                 if write:
                     out(line)
-                if line == marker:
-                    return
-            raise RuntimeError(f"Couldn't find {name} marker: {marker}")
+                if line in markers:
+                    return line
+            raise RuntimeError(f"Couldn't find {name} markers: {markers}")
 
         scan(TOC_START, 'TOC_START', write=True)
-        scan(TOC_END, 'TOC_END')
+        end_line = scan(['', TOC_END], 'TOC_END')
 
         rest = list(lines_iter)
         write_toc(rest, out)
 
         out(TOC_END)
+        if not end_line:
+            out('')
+
         for line in rest:
             out(line)
 

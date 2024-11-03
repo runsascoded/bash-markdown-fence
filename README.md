@@ -215,10 +215,17 @@ mdcmd --help
 mktoc --help
 # Usage: mktoc [OPTIONS] [PATH] [OUT_PATH]
 #
-#   Build a table of contents from a markdown file.
+#   Insert a table of contents (TOC) in a markdown file.
 #
-#   If no path is provided, will look for a README.md, and operate "in-place"
-#   (same as ``mdcmd -i README.md``).
+#   Looks for a pair of sentinel lines to insert or update the TOC between: ```
+#   <!-- toc --> <!-- /toc --> ```
+#
+#   If an empty line follows the opening ``<!-- toc -->`` line, the TOC will be
+#   inserted there (along with the closing sentinel); this is useful when
+#   initially generating a TOC.
+#
+#   If no ``out_path`` is provided, will operate "in-place" on ``README.md`` (as
+#   if ``mktoc -i README.md`` was passed).
 #
 # Options:
 #   -i, --inplace / -I, --no-inplace
