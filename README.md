@@ -196,6 +196,9 @@ mdcmd --help
 #   (same as ``mdcmd -i README.md``).
 #
 # Options:
+#   -a, --amend                     Squash changes onto the previous Git commit
+#                                   (can be used with `git rebase -x 'mdcmd
+#                                   -a'`)
 #   -i, --inplace / -I, --no-inplace
 #                                   Update the file in place
 #   -n, --dry-run                   Print the commands that would be run, but

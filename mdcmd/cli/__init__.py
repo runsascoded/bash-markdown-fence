@@ -8,7 +8,7 @@ from tempfile import TemporaryDirectory
 from typing import Generator, Callable, Optional, Tuple
 
 from click import command, option, argument
-from utz import process, err
+from utz import process, err, check
 
 RGX = re.compile(r'<!-- `(?P<cmd>[^`]+)` -->')
 Write = Callable[[str], None]
@@ -94,6 +94,7 @@ def out_fd(
 
 
 @command('mdcmd')
+@option('-a', '--amend', is_flag=True, help="Squash changes onto the previous Git commit (can be used with `git rebase -x 'mdcmd -a'`)")
 @option('-i/-I', '--inplace/--no-inplace', is_flag=True, default=None, help='Update the file in place')
 @option('-n', '--dry-run', is_flag=True, help="Print the commands that would be run, but don't execute them")
 @option('-x', '--execute', 'include_rgxs', multiple=True, help='Only execute commands that match these regular expressions')
@@ -101,6 +102,7 @@ def out_fd(
 @argument('path', required=False)
 @argument('out_path', required=False)
 def main(
+    amend: bool,
     inplace: Optional[bool],
     dry_run: bool,
     include_rgxs: Tuple[str, ...],
@@ -119,6 +121,10 @@ def main(
         if inplace is None:
             inplace = True
 
+    if amend:
+        if not check('git', 'diff', '--quiet', 'HEAD'):
+            raise RuntimeError("Require clean Git worktree for `-a/--amend`")
+
     with out_fd(inplace, path, out_path) as write:
         process_path(
             path=path,
@@ -127,6 +133,11 @@ def main(
             exclude_rgxs=exclude_rgxs,
             write=write,
         )
+
+    if amend:
+        if not check('git', 'diff', '--quiet', 'HEAD'):
+            err("Squashing changes onto HEAD")
+            process.run('git', 'commit', '-a', '--amend', '--no-edit')
 
 
 if __name__ == '__main__':
