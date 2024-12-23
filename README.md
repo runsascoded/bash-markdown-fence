@@ -246,6 +246,7 @@ mktoc --help
 - [runsascoded/utz]
 - [runsascoded/dvc-utils]
 - [ryan-williams/git-helpers]
+- [ryan-williams/parquet-helpers]
 - [ryan-williams/tdbs-dask]
 - [TileDB-Inc/scverse-ml-workshop-2024]
 
@@ -253,6 +254,7 @@ mktoc --help
 [TileDB-Inc/scverse-ml-workshop-2024]: https://github.com/TileDB-Inc/scverse-ml-workshop-2024?tab=readme-ov-file#training-models-on-atlas-scale-single-cell-datasets
 [ryan-williams/tdbs-dask]: https://github.com/ryan-williams/tdbs-dask?tab=readme-ov-file#tdbs-dask
 [ryan-williams/git-helpers]: https://github.com/ryan-williams/git-helpers?tab=readme-ov-file#git-helpers
+[ryan-williams/parquet-helpers]: https://github.com/ryan-williams/parquet-helpers
 [runsascoded/dvc-utils]: https://github.com/runsascoded/dvc-utils
 [runsascoded/juq]: https://github.com/runsascoded/juq
 
