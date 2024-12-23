@@ -181,6 +181,7 @@ bmd
 #                         plain-fenced output lines; 3x: print a <details/>
 #                         block, with command <summary/> and collapsed output
 #                         lines in a plain fence.
+#   -s, --strip-ansi      Strip ANSI escape sequences from output
 #   --help                Show this message and exit.
 ```
 

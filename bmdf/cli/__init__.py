@@ -1,12 +1,13 @@
-from os import environ as env
 import shlex
 import sys
+from os import environ as env
 from subprocess import PIPE, Popen, CalledProcessError
 from typing import Optional, Tuple
 
 from click import argument, command, option, get_current_context, echo
 from utz import process
 
+from bmdf import utils
 from bmdf.utils import COPY_BINARIES, details, fence
 
 BMDF_ERR_FMT_VAR = 'BMDF_ERR_FMT'
@@ -18,11 +19,13 @@ BMDF_ERR_FMT_HELP_STR = f' ("{BMDF_ERR_FMT}")' if BMDF_ERR_FMT else ''
 @option('-C', '--no-copy', is_flag=True, help=f'Disable copying output to clipboard (normally uses first available executable from {COPY_BINARIES}')
 @option('-e', '--error-fmt', default=BMDF_ERR_FMT, help=f'If the wrapped command exits non-zero, append a line of output formatted with this string. One "%d" placeholder may be used, for the returncode. Defaults to ${BMDF_ERR_FMT_VAR}{BMDF_ERR_FMT_HELP_STR}')
 @option('-f', '--fence', 'fence_level', count=True, help='Pass 0-3x to configure output style: 0x: print output lines, prepended by "# "; 1x: print a "```bash" fence block including the <command> and commented output lines; 2x: print a bash-fenced command followed by plain-fenced output lines; 3x: print a <details/> block, with command <summary/> and collapsed output lines in a plain fence.')
+@option('-s', '--strip-ansi', is_flag=True, help='Strip ANSI escape sequences from output')
 @argument('command', required=True, nargs=-1)
 def bmd(
     no_copy: bool,
     error_fmt: Optional[str],
     fence_level: int,
+    strip_ansi: bool,
     command: Tuple[str, ...],
 ):
     """Format a command and its output to markdown, either in a `bash`-fence or <details> block, and copy it to the clipboard."""
@@ -62,7 +65,7 @@ def bmd(
     out_lines = []
 
     def log(line=''):
-        out_lines.append(line)
+        out_lines.append(utils.strip_ansi(line) if strip_ansi else line)
 
     def print_commented_lines():
         for line in lines:

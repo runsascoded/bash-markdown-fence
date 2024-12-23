@@ -1,3 +1,4 @@
+import re
 from contextlib import contextmanager
 from typing import Callable
 
@@ -47,3 +48,7 @@ def amend_run(amend: bool) -> None:
             process.run('git', 'commit', '-a', '--amend', '--no-edit')
         else:
             err("No changes found")
+
+
+def strip_ansi(text):
+    return re.sub(r'\x1b\[[^m]*m|\x1b\[\d*[ABCDEFGJKST]', '', text)
