@@ -20,12 +20,14 @@ BMDF_ERR_FMT_HELP_STR = f' ("{BMDF_ERR_FMT}")' if BMDF_ERR_FMT else ''
 @option('-e', '--error-fmt', default=BMDF_ERR_FMT, help=f'If the wrapped command exits non-zero, append a line of output formatted with this string. One "%d" placeholder may be used, for the returncode. Defaults to ${BMDF_ERR_FMT_VAR}{BMDF_ERR_FMT_HELP_STR}')
 @option('-f', '--fence', 'fence_level', count=True, help='Pass 0-3x to configure output style: 0x: print output lines, prepended by "# "; 1x: print a "```bash" fence block including the <command> and commented output lines; 2x: print a bash-fenced command followed by plain-fenced output lines; 3x: print a <details/> block, with command <summary/> and collapsed output lines in a plain fence.')
 @option('-s', '--strip-ansi', is_flag=True, help='Strip ANSI escape sequences from output')
+@option('-t', '--fence-type', help="When -f/--fence is 2 or 3, this customizes the fence syntax type that the output is wrapped in")
 @argument('command', required=True, nargs=-1)
 def bmd(
     no_copy: bool,
     error_fmt: Optional[str],
     fence_level: int,
     strip_ansi: bool,
+    fence_type: Optional[str],
     command: Tuple[str, ...],
 ):
     """Format a command and its output to markdown, either in a `bash`-fence or <details> block, and copy it to the clipboard."""
@@ -71,8 +73,8 @@ def bmd(
         for line in lines:
             log(f'# {line}' if line else '#')
 
-    def print_fenced_lines():
-        with fence(log=log):
+    def print_fenced_lines(typ: str = None):
+        with fence(typ=typ, log=log):
             for line in lines:
                 log(line)
 
@@ -85,10 +87,10 @@ def bmd(
     elif fence_level == 2:
         with fence('bash', log=log):
             log(cmd_str)
-        print_fenced_lines()
+        print_fenced_lines(typ=fence_type)
     elif fence_level == 3:
         with details(code=cmd_str, log=log):
-            print_fenced_lines()
+            print_fenced_lines(typ=fence_type)
     else:
         raise ValueError(f"Pass -f/--fence at most 3x")
 

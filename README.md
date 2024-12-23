@@ -167,22 +167,24 @@ bmd
 #   <details> block, and copy it to the clipboard.
 #
 # Options:
-#   -C, --no-copy         Disable copying output to clipboard (normally uses
-#                         first available executable from ['pbcopy', 'xclip',
-#                         'clip']
-#   -e, --error-fmt TEXT  If the wrapped command exits non-zero, append a line
-#                         of output formatted with this string. One "%d"
-#                         placeholder may be used, for the returncode. Defaults
-#                         to $BMDF_ERR_FMT
-#   -f, --fence           Pass 0-3x to configure output style: 0x: print output
-#                         lines, prepended by "# "; 1x: print a "```bash" fence
-#                         block including the <command> and commented output
-#                         lines; 2x: print a bash-fenced command followed by
-#                         plain-fenced output lines; 3x: print a <details/>
-#                         block, with command <summary/> and collapsed output
-#                         lines in a plain fence.
-#   -s, --strip-ansi      Strip ANSI escape sequences from output
-#   --help                Show this message and exit.
+#   -C, --no-copy          Disable copying output to clipboard (normally uses
+#                          first available executable from ['pbcopy', 'xclip',
+#                          'clip']
+#   -e, --error-fmt TEXT   If the wrapped command exits non-zero, append a line
+#                          of output formatted with this string. One "%d"
+#                          placeholder may be used, for the returncode. Defaults
+#                          to $BMDF_ERR_FMT
+#   -f, --fence            Pass 0-3x to configure output style: 0x: print output
+#                          lines, prepended by "# "; 1x: print a "```bash" fence
+#                          block including the <command> and commented output
+#                          lines; 2x: print a bash-fenced command followed by
+#                          plain-fenced output lines; 3x: print a <details/>
+#                          block, with command <summary/> and collapsed output
+#                          lines in a plain fence.
+#   -s, --strip-ansi       Strip ANSI escape sequences from output
+#   -t, --fence-type TEXT  When -f/--fence is 2 or 3, this customizes the fence
+#                          syntax type that the output is wrapped in
+#   --help                 Show this message and exit.
 ```
 
 <!-- `bmdf -- mdcmd --help` -->

@@ -51,7 +51,7 @@ def process_path(
                     close_lines = ["</details>"]
                 elif line.startswith("```"):
                     if cmd[0] == "bmdff":
-                        close_lines = ["```"] * 3  # Skip two fences
+                        close_lines = ["```", re.compile("```\w+"), "```"]  # Skip two fences
                     else:
                         close_lines = ["```"]
                 elif not line:
@@ -64,7 +64,7 @@ def process_path(
             while close_lines:
                 close, *close_lines = close_lines
                 line = next(lines)
-                while line != close:
+                while close.fullmatch(line) if isinstance(close, re.Pattern) else line != close:
                     line = next(lines)
 
             output = process.output(cmd).decode().rstrip('\n')
