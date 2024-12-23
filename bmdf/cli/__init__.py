@@ -1,7 +1,7 @@
 import shlex
 import sys
 from os import environ as env
-from subprocess import PIPE, Popen, CalledProcessError
+from subprocess import PIPE, Popen, CalledProcessError, check_call
 from typing import Optional, Tuple
 
 from click import argument, command, option, get_current_context, echo
@@ -18,6 +18,7 @@ BMDF_ERR_FMT_HELP_STR = f' ("{BMDF_ERR_FMT}")' if BMDF_ERR_FMT else ''
 @command("fence", no_args_is_help=True)
 @option('-C', '--no-copy', is_flag=True, help=f'Disable copying output to clipboard (normally uses first available executable from {COPY_BINARIES}')
 @option('-e', '--error-fmt', default=BMDF_ERR_FMT, help=f'If the wrapped command exits non-zero, append a line of output formatted with this string. One "%d" placeholder may be used, for the returncode. Defaults to ${BMDF_ERR_FMT_VAR}{BMDF_ERR_FMT_HELP_STR}')
+@option('-E', '--env', 'env_strs', multiple=True, help="k=v env vars to set, for the wrapped command")
 @option('-f', '--fence', 'fence_level', count=True, help='Pass 0-3x to configure output style: 0x: print output lines, prepended by "# "; 1x: print a "```bash" fence block including the <command> and commented output lines; 2x: print a bash-fenced command followed by plain-fenced output lines; 3x: print a <details/> block, with command <summary/> and collapsed output lines in a plain fence.')
 @option('-s', '--strip-ansi', is_flag=True, help='Strip ANSI escape sequences from output')
 @option('-t', '--fence-type', help="When -f/--fence is 2 or 3, this customizes the fence syntax type that the output is wrapped in")
@@ -25,6 +26,7 @@ BMDF_ERR_FMT_HELP_STR = f' ("{BMDF_ERR_FMT}")' if BMDF_ERR_FMT else ''
 def bmd(
     no_copy: bool,
     error_fmt: Optional[str],
+    env_strs: Tuple[str, ...],
     fence_level: int,
     strip_ansi: bool,
     fence_type: Optional[str],
@@ -41,8 +43,16 @@ def bmd(
         if len(command) > 1 and not command[1].startswith('-'):
             command = [ command[0], '-p', *command[1:] ]
 
+    env_opts = dict(
+        kv.split('=', 1)
+        for kv in env_strs
+    )
+    proc_env = {
+        **env,
+        **env_opts,
+    }
     try:
-        output = process.output(*command, log=None, both=True)
+        output = process.output(*command, log=None, both=True, env=proc_env)
         returncode = 0
     except CalledProcessError as e:
         output = e.output
@@ -63,6 +73,7 @@ def bmd(
         lines.append(error_line)
 
     cmd_str = shlex.join(command)
+    cmd_str = " ".join([ *env_strs, cmd_str ])
 
     out_lines = []
 

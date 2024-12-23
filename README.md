@@ -174,6 +174,7 @@ bmd
 #                          of output formatted with this string. One "%d"
 #                          placeholder may be used, for the returncode. Defaults
 #                          to $BMDF_ERR_FMT
+#   -E, --env TEXT         k=v env vars to set, for the wrapped command
 #   -f, --fence            Pass 0-3x to configure output style: 0x: print output
 #                          lines, prepended by "# "; 1x: print a "```bash" fence
 #                          block including the <command> and commented output
