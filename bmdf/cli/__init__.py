@@ -1,11 +1,12 @@
 import shlex
 import sys
 from os import environ as env
-from subprocess import PIPE, Popen, CalledProcessError, check_call
+from subprocess import PIPE, Popen, CalledProcessError
 from typing import Optional, Tuple
 
 from click import argument, command, option, get_current_context, echo
-from utz import process
+from utz import proc
+from utz.process import pipeline
 
 from bmdf import utils
 from bmdf.utils import COPY_BINARIES, details, fence
@@ -43,6 +44,16 @@ def bmd(
         if len(command) > 1 and not command[1].startswith('-'):
             command = [ command[0], '-p', *command[1:] ]
 
+    commands: list[list[str]] = []
+    start_idx = 0
+    for idx, arg in enumerate(command):
+        if arg == "|":
+            cmd = command[start_idx:idx]
+            commands.append(cmd)
+            start_idx = idx + 1
+    if start_idx < len(command):
+        commands.append(command[start_idx:])
+
     env_opts = dict(
         kv.split('=', 1)
         for kv in env_strs
@@ -52,16 +63,21 @@ def bmd(
         **env_opts,
     }
     try:
-        output = process.output(*command, log=None, both=True, env=proc_env)
-        returncode = 0
+        if len(commands) == 1:
+            output = proc.output(*command, log=None, both=True, env=proc_env).decode()
+            returncode = 0
+        else:
+            cmds = [ shlex.join(cmd) for cmd in commands ]
+            output = pipeline(cmds)
+            returncode = 0
     except CalledProcessError as e:
-        output = e.output
+        output = e.output.decode()
         returncode = e.returncode
 
     lines = [
         line.rstrip('\n')
         for line in
-        output.decode().split('\n')
+        output.split('\n')
     ]
     if lines and not lines[-1]:
         lines = lines[:-1]
@@ -72,7 +88,10 @@ def bmd(
             error_line = error_fmt
         lines.append(error_line)
 
-    cmd_str = shlex.join(command)
+    if len(commands) == 1:
+        cmd_str = shlex.join(command)
+    else:
+        cmd_str = " | ".join([ shlex.join(cmd) for cmd in commands ])
     cmd_str = " ".join([ *env_strs, cmd_str ])
 
     out_lines = []
@@ -109,7 +128,7 @@ def bmd(
     if not no_copy:
         copy_cmd = None
         for cmd in COPY_BINARIES:
-            if process.check('which', cmd, log=None):
+            if proc.check('which', cmd, log=None):
                 copy_cmd = cmd
                 break
         if copy_cmd:

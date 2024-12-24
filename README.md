@@ -11,6 +11,7 @@
         - [`bmdf` (`bmd -f`): command+output mode](#bmdf)
         - [`bmdff` (`bmd -ff`): two-fence mode](#bmdff)
         - [`bmdfff` (`bmd -fff`): &lt;details&gt; mode](#bmdfff)
+        - [Piping](#piping)
     - [`mdcmd`: update commands embedded in Markdown files](#mdcmd)
     - [`mktoc`: update table of contents](#mktoc)
     - [Reference](#reference)
@@ -104,6 +105,23 @@ to:
 10
 ```
 </details>
+
+#### Piping <a id="piping"></a>
+Piping works too, e.g.:
+
+  ````
+  <!-- `bmdf -- seq 10 | wc -l` -->
+  ````
+
+will become:
+
+<!-- `bmdf -- seq 10 | wc -l` -->
+```bash
+seq 10 | wc -l
+# 10
+```
+
+(the `--` is needed so that that `-l` isn't parsed as an opt to `bmdf`)
 
 ### `mdcmd`: update commands embedded in Markdown files <a id="mdcmd"></a>
 
