@@ -23,6 +23,7 @@ BMDF_ERR_FMT_HELP_STR = f' ("{BMDF_ERR_FMT}")' if BMDF_ERR_FMT else ''
 @option('-f', '--fence', 'fence_level', count=True, help='Pass 0-3x to configure output style: 0x: print output lines, prepended by "# "; 1x: print a "```bash" fence block including the <command> and commented output lines; 2x: print a bash-fenced command followed by plain-fenced output lines; 3x: print a <details/> block, with command <summary/> and collapsed output lines in a plain fence.')
 @option('-s', '--strip-ansi', is_flag=True, help='Strip ANSI escape sequences from output')
 @option('-t', '--fence-type', help="When -f/--fence is 2 or 3, this customizes the fence syntax type that the output is wrapped in")
+@option('-x', '--shell-executable', help="`shell_executable` to pass to Popen pipelines (default: $SHELL)")
 @argument('command', required=True, nargs=-1)
 def bmd(
     no_copy: bool,
@@ -31,6 +32,7 @@ def bmd(
     fence_level: int,
     strip_ansi: bool,
     fence_type: Optional[str],
+    shell_executable: Optional[str],
     command: Tuple[str, ...],
 ):
     """Format a command and its output to markdown, either in a `bash`-fence or <details> block, and copy it to the clipboard."""
@@ -54,6 +56,9 @@ def bmd(
     if start_idx < len(command):
         commands.append(command[start_idx:])
 
+    if shell_executable is None:
+        shell_executable = env.get('SHELL')
+
     env_opts = dict(
         kv.split('=', 1)
         for kv in env_strs
@@ -68,7 +73,7 @@ def bmd(
             returncode = 0
         else:
             cmds = [ shlex.join(cmd) for cmd in commands ]
-            output = pipeline(cmds)
+            output = pipeline(cmds, shell_executable=shell_executable, env=proc_env)
             returncode = 0
     except CalledProcessError as e:
         output = e.output.decode()

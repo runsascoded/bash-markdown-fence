@@ -19,6 +19,12 @@ jobs:
       run: |
         mktoc
         git diff --exit-code
+    - name: Verify bash functions work
+      run: |
+        wcl() { wc -l "$@"; }
+        export -f wcl
+        export SHELL
+        bmdf seq 10 '|' wcl
     - name: Verify README examples are up to date
       run: |
         mdcmd
