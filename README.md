@@ -227,6 +227,9 @@ mdcmd --help
 #                                   Edit the file in-place
 #   -n, --dry-run                   Print the commands that would be run, but
 #                                   don't execute them
+#   -T, --no-cwd-tmpdir             In in-place mode, use a system temporary-
+#                                   directory (instead of the current workdir,
+#                                   which is the default)
 #   -x, --execute TEXT              Only execute commands that match these
 #                                   regular expressions
 #   -X, --exclude TEXT              Only execute commands that don't match these
@@ -257,6 +260,9 @@ mktoc --help
 #   -i, --inplace / -I, --no-inplace
 #                                   Edit the file in-place
 #   -n, --indent-size INTEGER       Indent size (spaces)
+#   -T, --no-cwd-tmpdir             In in-place mode, use a system temporary-
+#                                   directory (instead of the current workdir,
+#                                   which is the default)
 #   --help                          Show this message and exit.
 ```
 

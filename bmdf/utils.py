@@ -33,6 +33,7 @@ COPY_BINARIES = [ 'pbcopy', 'xclip', 'clip', ]
 
 amend_opt = option('-a', '--amend', is_flag=True, help="Squash changes onto the previous Git commit; suitable for use with `git rebase -x`")
 inplace_opt = option('-i/-I', '--inplace/--no-inplace', is_flag=True, default=None, help="Edit the file in-place")
+no_cwd_tmpdir_opt = option('-T', '--no-cwd-tmpdir', is_flag=True, help="In in-place mode, use a system temporary-directory (instead of the current workdir, which is the default)")
 
 
 def amend_check(amend: bool):

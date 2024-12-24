@@ -2,7 +2,7 @@ import re
 import shlex
 from contextlib import contextmanager
 from functools import partial
-from os import environ as env, rename
+from os import environ as env, rename, getcwd
 from os.path import basename, join, exists
 from tempfile import TemporaryDirectory
 from typing import Generator, Callable, Optional, Tuple
@@ -10,7 +10,7 @@ from typing import Generator, Callable, Optional, Tuple
 from click import command, option, argument
 from utz import process, err
 
-from bmdf.utils import amend_opt, amend_check, amend_run, inplace_opt
+from bmdf.utils import amend_opt, amend_check, amend_run, inplace_opt, no_cwd_tmpdir_opt
 
 RGX = re.compile(r'<!-- `(?P<cmd>[^`]+)` -->')
 Write = Callable[[str], None]
@@ -78,11 +78,12 @@ def out_fd(
     inplace: bool,
     path: str,
     out_path: Optional[str],
+    dir: Optional[str] = None,
 ) -> Generator[Write, None, None]:
     if inplace:
         if out_path:
             raise ValueError('Cannot specify both --inplace and an output path')
-        with TemporaryDirectory() as tmpdir:
+        with TemporaryDirectory(dir=dir) as tmpdir:
             tmp_path = join(tmpdir, basename(path))
             with open(tmp_path, 'w') as f:
                 yield partial(print, file=f)
@@ -99,6 +100,7 @@ def out_fd(
 @amend_opt
 @inplace_opt
 @option('-n', '--dry-run', is_flag=True, help="Print the commands that would be run, but don't execute them")
+@no_cwd_tmpdir_opt
 @option('-x', '--execute', 'include_rgxs', multiple=True, help='Only execute commands that match these regular expressions')
 @option('-X', '--exclude', 'exclude_rgxs', multiple=True, help="Only execute commands that don't match these regular expressions")
 @argument('path', required=False)
@@ -107,6 +109,7 @@ def main(
     amend: bool,
     inplace: Optional[bool],
     dry_run: bool,
+    no_cwd_tmpdir: bool,
     include_rgxs: Tuple[str, ...],
     exclude_rgxs: Tuple[str, ...],
     path: str,
@@ -125,7 +128,8 @@ def main(
 
     amend_check(amend)
 
-    with out_fd(inplace, path, out_path) as write:
+    tmpdir = None if no_cwd_tmpdir else getcwd()
+    with out_fd(inplace, path, out_path, dir=tmpdir) as write:
         process_path(
             path=path,
             dry_run=dry_run,

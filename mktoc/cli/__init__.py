@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import re
-from os import environ as env
+from os import environ as env, getcwd
 from os.path import exists
 from typing import Optional
 
 from click import argument, command, option, UsageError
 
-from bmdf.utils import amend_opt, amend_check, amend_run, inplace_opt
+from bmdf.utils import amend_opt, amend_check, amend_run, inplace_opt, no_cwd_tmpdir_opt
 from mdcmd.cli import out_fd, Write
 
 RGX = r'(?P<level>#{2,}) (?P<title>.*) <a id="(?P<id>[^"]+)"></a>'
@@ -21,12 +21,14 @@ TOC_END = '<!-- /toc -->'
 @amend_opt
 @inplace_opt
 @option('-n', '--indent-size', type=int, default=4, help="Indent size (spaces)")
+@no_cwd_tmpdir_opt
 @argument('path', required=False)
 @argument('out_path', required=False)
 def main(
     amend: bool,
     inplace: Optional[bool],
     indent_size: int,
+    no_cwd_tmpdir: bool,
     path: Optional[str],
     out_path: Optional[str],
 ):
@@ -63,7 +65,8 @@ def main(
             title = re.sub(r'\[([^]]+)](?:\([^)]+\))?', r'\1', title)
             out(f'{indent}- [{title}](#{id})')
 
-    with out_fd(inplace, path, out_path) as out:
+    tmpdir = None if no_cwd_tmpdir else getcwd()
+    with out_fd(inplace, path, out_path, dir=tmpdir) as out:
         lines_iter = iter(lines)
 
         def scan(markers: str | list[str], name: str, write: bool = False):
