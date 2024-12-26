@@ -12,6 +12,7 @@
         - [`bmdff` (`bmd -ff`): two-fence mode](#bmdff)
         - [`bmdfff` (`bmd -fff`): &lt;details&gt; mode](#bmdfff)
         - [Piping](#piping)
+        - [Env vars](#env-vars)
     - [`mdcmd`: update commands embedded in Markdown files](#mdcmd)
     - [`mktoc`: update table of contents](#mktoc)
     - [Reference](#reference)
@@ -123,6 +124,63 @@ seq 10 | wc -l
 
 (the `--` is needed so that that `-l` isn't parsed as an opt to `bmdf`)
 
+#### Env vars <a id="env-vars"></a>
+By default, `shell=True` is passed to `subprocess` calls (but can be disabled via `-S`).
+
+This means env vars are expanded; they can also be set via `-E`, e.g.:
+
+  ````
+  <!-- `bmdf -E FOO=bar echo $FOO` -->
+  ````
+
+yields:
+<!-- `bmdf -E FOO=bar echo $FOO` -->
+```bash
+FOO=bar echo '$FOO'
+# bar
+```
+
+<details>
+<summary>
+More examples of quoting/splitting behavior
+</summary>
+
+Quoting `"$FOO"`:
+  ````
+  <!-- `bmdf -E FOO=bar echo "$FOO"` -->
+  ````
+
+yields:
+<!-- `bmdf -E FOO=bar echo "$FOO"` -->
+```bash
+FOO=bar echo '$FOO'
+# bar
+```
+
+Arg with spaces:
+  ````
+  <!-- `bmdf -E FOO=bar echo "FOO: $FOO"` -->
+  ````
+yields:
+<!-- `bmdf -E FOO=bar echo "FOO: $FOO"` -->
+```bash
+FOO=bar echo 'FOO: $FOO'
+# FOO: bar
+```
+
+Escaping `$`:
+  ````
+  <!-- `bmdf -E FOO=bar echo "\$FOO=$FOO"` -->
+  ````
+yields:
+<!-- `bmdf -E FOO=bar echo "\$FOO=$FOO"` -->
+```bash
+FOO=bar echo '\$FOO=$FOO'
+# $FOO=bar
+```
+
+</details>
+
 ### `mdcmd`: update commands embedded in Markdown files <a id="mdcmd"></a>
 
 ```bash
@@ -202,6 +260,7 @@ bmd
 #                                command <summary/> and collapsed output lines
 #                                in a plain fence.
 #   -s, --strip-ansi             Strip ANSI escape sequences from output
+#   -S, --no-shell               Disable "shell" mode for the command
 #   -t, --fence-type TEXT        When -f/--fence is 2 or 3, this customizes the
 #                                fence syntax type that the output is wrapped in
 #   -x, --shell-executable TEXT  `shell_executable` to pass to Popen pipelines

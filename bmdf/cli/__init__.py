@@ -22,6 +22,7 @@ BMDF_ERR_FMT_HELP_STR = f' ("{BMDF_ERR_FMT}")' if BMDF_ERR_FMT else ''
 @option('-E', '--env', 'env_strs', multiple=True, help="k=v env vars to set, for the wrapped command")
 @option('-f', '--fence', 'fence_level', count=True, help='Pass 0-3x to configure output style: 0x: print output lines, prepended by "# "; 1x: print a "```bash" fence block including the <command> and commented output lines; 2x: print a bash-fenced command followed by plain-fenced output lines; 3x: print a <details/> block, with command <summary/> and collapsed output lines in a plain fence.')
 @option('-s', '--strip-ansi', is_flag=True, help='Strip ANSI escape sequences from output')
+@option('-S', '--no-shell', is_flag=True, help='Disable "shell" mode for the command')
 @option('-t', '--fence-type', help="When -f/--fence is 2 or 3, this customizes the fence syntax type that the output is wrapped in")
 @option('-x', '--shell-executable', help="`shell_executable` to pass to Popen pipelines (default: $SHELL)")
 @argument('command', required=True, nargs=-1)
@@ -31,6 +32,7 @@ def bmd(
     env_strs: Tuple[str, ...],
     fence_level: int,
     strip_ansi: bool,
+    no_shell: bool,
     fence_type: Optional[str],
     shell_executable: Optional[str],
     command: Tuple[str, ...],
@@ -68,12 +70,14 @@ def bmd(
         **env_opts,
     }
     try:
+        shell = not no_shell
         if len(commands) == 1:
-            output = proc.output(*command, log=None, both=True, env=proc_env).decode()
+            args = [' '.join(command)] if shell else commands
+            output = proc.output(*args, log=None, both=True, env=proc_env, shell=shell).decode()
             returncode = 0
         else:
-            cmds = [ shlex.join(cmd) for cmd in commands ]
-            output = pipeline(cmds, shell_executable=shell_executable, env=proc_env)
+            cmds = [ ' '.join(cmd) for cmd in commands ] if shell else commands
+            output = pipeline(cmds, shell_executable=shell_executable, env=proc_env, shell=shell)
             returncode = 0
     except CalledProcessError as e:
         output = e.output.decode()
