@@ -97,7 +97,13 @@ def bmd(
         cmd_str = shlex.join(command)
     else:
         cmd_str = " | ".join([ shlex.join(cmd) for cmd in commands ])
-    cmd_str = " ".join([ *env_strs, cmd_str ])
+    cmd_str = " ".join([
+        *[
+            f'"{env_str}"' if ' ' in env_str else env_str
+            for env_str in env_strs
+        ],
+        cmd_str,
+    ])
 
     out_lines = []
 
