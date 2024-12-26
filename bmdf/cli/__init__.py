@@ -71,13 +71,16 @@ def bmd(
     }
     try:
         shell = not no_shell
+        kwargs = dict(env=proc_env, shell=shell)
+        if shell and shell_executable:
+            kwargs['executable'] = shell_executable
         if len(commands) == 1:
             args = [' '.join(command)] if shell else commands
-            output = proc.output(*args, log=None, both=True, env=proc_env, shell=shell).decode()
+            output = proc.output(*args, log=None, both=True, **kwargs).decode()
             returncode = 0
         else:
-            cmds = [ ' '.join(cmd) for cmd in commands ] if shell else commands
-            output = pipeline(cmds, shell_executable=shell_executable, env=proc_env, shell=shell)
+            args = [ ' '.join(cmd) for cmd in commands ] if shell else [ shlex.join(cmd) for cmd in commands ]
+            output = pipeline(args, **kwargs)
             returncode = 0
     except CalledProcessError as e:
         output = e.output.decode()
