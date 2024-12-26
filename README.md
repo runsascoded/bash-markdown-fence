@@ -1,5 +1,5 @@
 # `bmdf`
-**B**ash **m**ark**d**own **f**ences: embed commands, their output, and tables of contents in markdown 
+**B**ash **m**ark**d**own **f**ences: embed commands, their output, and tables of contents in markdown
 
 [![](https://img.shields.io/pypi/v/bmdf?label=bmdf&color=blue)][bmdf]
 
@@ -269,19 +269,25 @@ mktoc --help
 (these blocks are self-hosted, using `bmdf` and `mdcmd`; likewise [the table of contents up top](#toc), via `mktoc` 😎)
 
 ## Examples <a id="examples"></a>
+These repos' READMEs use `bmdf` / `mdcmd` / `mktoc` to execute README examples (and in some cases are verified by GitHub Actions):
+
 - [runsascoded/juq]
 - [runsascoded/utz]
 - [runsascoded/dvc-utils]
+- [ryan-williams/dvc-helpers] ([GHA][dvc-helpers GHA])
 - [ryan-williams/git-helpers]
-- [ryan-williams/parquet-helpers]
+- [ryan-williams/parquet-helpers] ([GHA][pqt-helpers GHA])
 - [ryan-williams/tdbs-dask]
 - [TileDB-Inc/scverse-ml-workshop-2024]
 
 [runsascoded/utz]: https://github.com/runsascoded/utz?tab=readme-ov-file#utz
 [TileDB-Inc/scverse-ml-workshop-2024]: https://github.com/TileDB-Inc/scverse-ml-workshop-2024?tab=readme-ov-file#training-models-on-atlas-scale-single-cell-datasets
 [ryan-williams/tdbs-dask]: https://github.com/ryan-williams/tdbs-dask?tab=readme-ov-file#tdbs-dask
+[ryan-williams/dvc-helpers]: https://github.com/ryan-williams/dvc-helpers?tab=readme-ov-file#dvc-helpers
+[dvc-helpers GHA]: https://github.com/ryan-williams/dvc-helpers/actions
 [ryan-williams/git-helpers]: https://github.com/ryan-williams/git-helpers?tab=readme-ov-file#git-helpers
 [ryan-williams/parquet-helpers]: https://github.com/ryan-williams/parquet-helpers
+[pqt-helpers GHA]: https://github.com/ryan-williams/parquet-helpers/actions/
 [runsascoded/dvc-utils]: https://github.com/runsascoded/dvc-utils
 [runsascoded/juq]: https://github.com/runsascoded/juq
 
