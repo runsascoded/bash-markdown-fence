@@ -13,6 +13,7 @@
         - [`bmdfff` (`bmd -fff`): &lt;details&gt; mode](#bmdfff)
         - [Piping](#piping)
         - [Env vars](#env-vars)
+        - [`-w/--workdir` / `$BMDF_WORKDIR`](#workdir)
     - [`mdcmd`: update commands embedded in Markdown files](#mdcmd)
     - [`mktoc`: update table of contents](#mktoc)
     - [Reference](#reference)
@@ -181,6 +182,20 @@ FOO=bar echo '\$FOO=$FOO'
 
 </details>
 
+#### `-w/--workdir` / `$BMDF_WORKDIR` <a id="workdir"></a>
+
+By default, `bmdf` runs in the current working directory. This can be overridden with `-w`:
+
+  ````
+  <!-- `bmdf -w .github ls` -->
+  ````
+
+<!-- `bmdf -w .github ls` -->
+```bash
+ls
+# workflows
+```
+
 ### `mdcmd`: update commands embedded in Markdown files <a id="mdcmd"></a>
 
 ```bash
@@ -263,6 +278,8 @@ bmd
 #   -S, --no-shell               Disable "shell" mode for the command
 #   -t, --fence-type TEXT        When -f/--fence is 2 or 3, this customizes the
 #                                fence syntax type that the output is wrapped in
+#   -w, --workdir TEXT           `cd` to this directory before executing (falls
+#                                back to $BMDF_WORKDIR
 #   -x, --shell-executable TEXT  `shell_executable` to pass to Popen pipelines
 #                                (default: $SHELL)
 #   --help                       Show this message and exit.

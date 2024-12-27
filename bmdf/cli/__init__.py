@@ -1,6 +1,6 @@
 import shlex
 import sys
-from os import environ as env
+from os import environ as env, chdir
 from subprocess import PIPE, Popen, CalledProcessError
 from typing import Optional, Tuple
 
@@ -15,6 +15,8 @@ BMDF_ERR_FMT_VAR = 'BMDF_ERR_FMT'
 BMDF_ERR_FMT = env.get(BMDF_ERR_FMT_VAR)
 BMDF_ERR_FMT_HELP_STR = f' ("{BMDF_ERR_FMT}")' if BMDF_ERR_FMT else ''
 
+BMDF_WORKDIR_VAR = 'BMDF_WORKDIR'
+BMDF_WORKDIR = env.get(BMDF_WORKDIR_VAR)
 
 @command("fence", no_args_is_help=True)
 @option('-C', '--no-copy', is_flag=True, help=f'Disable copying output to clipboard (normally uses first available executable from {COPY_BINARIES}')
@@ -24,6 +26,7 @@ BMDF_ERR_FMT_HELP_STR = f' ("{BMDF_ERR_FMT}")' if BMDF_ERR_FMT else ''
 @option('-s', '--strip-ansi', is_flag=True, help='Strip ANSI escape sequences from output')
 @option('-S', '--no-shell', is_flag=True, help='Disable "shell" mode for the command')
 @option('-t', '--fence-type', help="When -f/--fence is 2 or 3, this customizes the fence syntax type that the output is wrapped in")
+@option('-w', '--workdir', default=BMDF_WORKDIR, help=f'`cd` to this directory before executing (falls back to ${BMDF_WORKDIR_VAR}')
 @option('-x', '--shell-executable', help="`shell_executable` to pass to Popen pipelines (default: $SHELL)")
 @argument('command', required=True, nargs=-1)
 def bmd(
@@ -34,10 +37,14 @@ def bmd(
     strip_ansi: bool,
     no_shell: bool,
     fence_type: Optional[str],
+    workdir: Optional[str],
     shell_executable: Optional[str],
     command: Tuple[str, ...],
 ):
     """Format a command and its output to markdown, either in a `bash`-fence or <details> block, and copy it to the clipboard."""
+    if workdir:
+        chdir(workdir)
+
     if not command:
         ctx = get_current_context()
         echo(ctx.get_help())
