@@ -1,12 +1,13 @@
 import shlex
 import sys
-from os import environ as env, chdir
+from os import chdir, path
 from subprocess import PIPE, Popen, CalledProcessError
 from typing import Optional, Tuple
 
 from click import argument, command, option, get_current_context, echo
-from utz import proc
+from utz import env, proc
 from utz.process import pipeline
+from utz.process.cmd import Cmd
 
 from bmdf import utils
 from bmdf.utils import COPY_BINARIES, details, fence
@@ -18,76 +19,103 @@ BMDF_ERR_FMT_HELP_STR = f' ("{BMDF_ERR_FMT}")' if BMDF_ERR_FMT else ''
 BMDF_WORKDIR_VAR = 'BMDF_WORKDIR'
 BMDF_WORKDIR = env.get(BMDF_WORKDIR_VAR)
 
+BMDF_SHELL_VAR = 'BMDF_SHELL'
+BMDF_SHELL = env.get(BMDF_SHELL_VAR)
+
+
 @command("fence", no_args_is_help=True)
+@option('-A', '--strip-ansi', is_flag=True, help='Strip ANSI escape sequences from output')
 @option('-C', '--no-copy', is_flag=True, help=f'Disable copying output to clipboard (normally uses first available executable from {COPY_BINARIES}')
 @option('-e', '--error-fmt', default=BMDF_ERR_FMT, help=f'If the wrapped command exits non-zero, append a line of output formatted with this string. One "%d" placeholder may be used, for the returncode. Defaults to ${BMDF_ERR_FMT_VAR}{BMDF_ERR_FMT_HELP_STR}')
 @option('-E', '--env', 'env_strs', multiple=True, help="k=v env vars to set, for the wrapped command")
 @option('-f', '--fence', 'fence_level', count=True, help='Pass 0-3x to configure output style: 0x: print output lines, prepended by "# "; 1x: print a "```bash" fence block including the <command> and commented output lines; 2x: print a bash-fenced command followed by plain-fenced output lines; 3x: print a <details/> block, with command <summary/> and collapsed output lines in a plain fence.')
-@option('-s', '--strip-ansi', is_flag=True, help='Strip ANSI escape sequences from output')
-@option('-S', '--no-shell', is_flag=True, help='Disable "shell" mode for the command')
+@option('-s/-S', '--shell/--no-shell', is_flag=True, default=None, help=f'Disable "shell" mode for the command; falls back to ${BMDF_SHELL_VAR}, but defaults to True if neither is set')
 @option('-t', '--fence-type', help="When -f/--fence is 2 or 3, this customizes the fence syntax type that the output is wrapped in")
+@option('-U', '--no-expanduser', is_flag=True, default=None, help='In non-shell mode, skip expanding user paths')
+@option('-V', '--no-expandvars', is_flag=True, default=None, help='In non-shell mode, skip expanding Bash vars')
 @option('-w', '--workdir', default=BMDF_WORKDIR, help=f'`cd` to this directory before executing (falls back to ${BMDF_WORKDIR_VAR}')
-@option('-x', '--shell-executable', help="`shell_executable` to pass to Popen pipelines (default: $SHELL)")
+@option('-x', '--executable', help="`shell_executable` to pass to Popen pipelines (default: $SHELL)")
 @argument('command', required=True, nargs=-1)
 def bmd(
+    strip_ansi: bool,
     no_copy: bool,
     error_fmt: Optional[str],
     env_strs: Tuple[str, ...],
     fence_level: int,
-    strip_ansi: bool,
-    no_shell: bool,
+    shell: bool,
     fence_type: Optional[str],
+    no_expanduser: bool,
+    no_expandvars: bool,
     workdir: Optional[str],
-    shell_executable: Optional[str],
+    executable: Optional[str],
     command: Tuple[str, ...],
 ):
     """Format a command and its output to markdown, either in a `bash`-fence or <details> block, and copy it to the clipboard."""
-    if workdir:
-        chdir(workdir)
-
     if not command:
         ctx = get_current_context()
         echo(ctx.get_help())
         ctx.exit()
+
+    if workdir:
+        chdir(workdir)
+
+    if shell is None:
+        shell = bool(env.get(BMDF_SHELL_VAR, True))
+
+    if shell and executable is None:
+        executable = env.get('SHELL')
 
     if command[0] == 'time':
         # Without `-p`, `time`'s output is not POSIX-compliant, doesn't get parsed properly
         if len(command) > 1 and not command[1].startswith('-'):
             command = [ command[0], '-p', *command[1:] ]
 
-    commands: list[list[str]] = []
-    start_idx = 0
-    for idx, arg in enumerate(command):
-        if arg == "|":
-            cmd = command[start_idx:idx]
-            commands.append(cmd)
-            start_idx = idx + 1
-    if start_idx < len(command):
-        commands.append(command[start_idx:])
-
-    if shell_executable is None:
-        shell_executable = env.get('SHELL')
+    expanduser = not no_expanduser
+    expandvars = not no_expandvars
 
     env_opts = dict(
         kv.split('=', 1)
         for kv in env_strs
     )
-    proc_env = {
-        **env,
-        **env_opts,
-    }
+    proc_env = { **env, **env_opts, }
+
+    cmds: list[Cmd] = []
+    start_idx = 0
+    def mk_cmd(idx: int):
+        nonlocal start_idx
+        args = command[start_idx:idx]
+        if shell:
+            args = shlex.join(args)
+            # with env(env_opts):
+            #     if expanduser:
+            #         args = path.expanduser(args)
+            #     if expandvars:
+            #         args = path.expandvars(args)
+        cmd = Cmd.mk(
+            args,
+            **{
+                'env': proc_env,
+                'shell': shell,
+                **(
+                    dict(executable=executable) if shell else
+                    dict(expanduser=expanduser, expandvars=expandvars)
+                )
+            }
+        )
+        # print(f'{cmd=}')
+        cmds.append(cmd)
+        start_idx = idx + 1
+
+    n = len(command)
+    for idx, arg in enumerate(command):
+        if arg == "|":
+            mk_cmd(idx)
+    if start_idx < n:
+        mk_cmd(n)
+
     try:
-        shell = not no_shell
-        kwargs = dict(env=proc_env, shell=shell)
-        if shell and shell_executable:
-            kwargs['executable'] = shell_executable
-        if len(commands) == 1:
-            args = [' '.join(command)] if shell else commands
-            output = proc.output(*args, log=None, both=True, **kwargs).decode()
-            returncode = 0
-        else:
-            args = [ ' '.join(cmd) for cmd in commands ] if shell else [ shlex.join(cmd) for cmd in commands ]
-            output = pipeline(args, **kwargs)
+        with env(env_opts):
+            output = pipeline(cmds)
             returncode = 0
     except CalledProcessError as e:
         output = e.output.decode()
@@ -107,10 +135,10 @@ def bmd(
             error_line = error_fmt
         lines.append(error_line)
 
-    if len(commands) == 1:
+    if len(cmds) == 1:
         cmd_str = shlex.join(command)
     else:
-        cmd_str = " | ".join([ shlex.join(cmd) for cmd in commands ])
+        cmd_str = " | ".join([ str(cmd) for cmd in cmds ])
     cmd_str = " ".join([
         *[
             f'"{env_str}"' if ' ' in env_str else env_str
