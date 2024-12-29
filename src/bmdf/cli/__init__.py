@@ -1,8 +1,9 @@
 import shlex
 import sys
-from os import chdir, path
+from os import chdir
 from subprocess import PIPE, Popen, CalledProcessError
-from typing import Optional, Tuple
+from sys import stdout
+from typing import Optional, Tuple, Any, IO
 
 from click import argument, command, option, get_current_context, echo
 from utz import env, proc
@@ -10,7 +11,7 @@ from utz.process import pipeline
 from utz.process.cmd import Cmd
 
 from bmdf import utils
-from bmdf.utils import COPY_BINARIES, details, fence
+from bmdf.utils import COPY_BINARIES, details, fence, quote
 
 BMDF_ERR_FMT_VAR = 'BMDF_ERR_FMT'
 BMDF_ERR_FMT = env.get(BMDF_ERR_FMT_VAR)
@@ -22,6 +23,12 @@ BMDF_WORKDIR = env.get(BMDF_WORKDIR_VAR)
 BMDF_SHELL_VAR = 'BMDF_SHELL'
 BMDF_SHELL = env.get(BMDF_SHELL_VAR)
 
+BMDF_EXPANDUSER_VAR = 'BMDF_EXPANDUSER'
+BMDF_EXPANDUSER = env.get(BMDF_EXPANDUSER_VAR)
+
+BMDF_EXPANDVARS_VAR = 'BMDF_EXPANDVARS'
+BMDF_EXPANDVARS = env.get(BMDF_EXPANDVARS_VAR)
+
 
 @command("fence", no_args_is_help=True)
 @option('-A', '--strip-ansi', is_flag=True, help='Strip ANSI escape sequences from output')
@@ -31,24 +38,25 @@ BMDF_SHELL = env.get(BMDF_SHELL_VAR)
 @option('-f', '--fence', 'fence_level', count=True, help='Pass 0-3x to configure output style: 0x: print output lines, prepended by "# "; 1x: print a "```bash" fence block including the <command> and commented output lines; 2x: print a bash-fenced command followed by plain-fenced output lines; 3x: print a <details/> block, with command <summary/> and collapsed output lines in a plain fence.')
 @option('-s/-S', '--shell/--no-shell', is_flag=True, default=None, help=f'Disable "shell" mode for the command; falls back to ${BMDF_SHELL_VAR}, but defaults to True if neither is set')
 @option('-t', '--fence-type', help="When -f/--fence is 2 or 3, this customizes the fence syntax type that the output is wrapped in")
-@option('-U', '--no-expanduser', is_flag=True, default=None, help='In non-shell mode, skip expanding user paths')
-@option('-V', '--no-expandvars', is_flag=True, default=None, help='In non-shell mode, skip expanding Bash vars')
+@option('-u/-U', '--expanduser/--no-expanduser', is_flag=True, default=None, help=f'Pass commands through `os.path.expanduser` before `subprocess`; falls back to ${BMDF_EXPANDUSER_VAR}')
+@option('-v/-V', '--expandvars/--no-expandvars', is_flag=True, default=None, help=f'Pass commands through `os.path.expandvars` before `subprocess`; falls back to ${BMDF_EXPANDVARS_VAR}')
 @option('-w', '--workdir', default=BMDF_WORKDIR, help=f'`cd` to this directory before executing (falls back to ${BMDF_WORKDIR_VAR}')
 @option('-x', '--executable', help="`shell_executable` to pass to Popen pipelines (default: $SHELL)")
 @argument('command', required=True, nargs=-1)
 def bmd(
-    strip_ansi: bool,
-    no_copy: bool,
-    error_fmt: Optional[str],
-    env_strs: Tuple[str, ...],
-    fence_level: int,
-    shell: bool,
-    fence_type: Optional[str],
-    no_expanduser: bool,
-    no_expandvars: bool,
-    workdir: Optional[str],
-    executable: Optional[str],
     command: Tuple[str, ...],
+    strip_ansi: bool = False,
+    no_copy: bool = False,
+    error_fmt: Optional[str] = None,
+    env_strs: Tuple[str, ...] = (),
+    fence_level: int = 0,
+    shell: Optional[bool] = None,
+    fence_type: Optional[str] = None,
+    expanduser: Optional[bool] = None,
+    expandvars: Optional[bool] = None,
+    workdir: Optional[str] = None,
+    executable: Optional[str] = None,
+    file: Optional[IO[Any]] = None,
 ):
     """Format a command and its output to markdown, either in a `bash`-fence or <details> block, and copy it to the clipboard."""
     if not command:
@@ -70,14 +78,17 @@ def bmd(
         if len(command) > 1 and not command[1].startswith('-'):
             command = [ command[0], '-p', *command[1:] ]
 
-    expanduser = not no_expanduser
-    expandvars = not no_expandvars
-
     env_opts = dict(
         kv.split('=', 1)
         for kv in env_strs
     )
     proc_env = { **env, **env_opts, }
+
+    if expanduser is None:
+        expanduser = BMDF_EXPANDUSER
+
+    if expandvars is None:
+        expandvars = BMDF_EXPANDVARS
 
     cmds: list[Cmd] = []
     start_idx = 0
@@ -85,21 +96,18 @@ def bmd(
         nonlocal start_idx
         args = command[start_idx:idx]
         if shell:
-            args = shlex.join(args)
-            # with env(env_opts):
-            #     if expanduser:
-            #         args = path.expanduser(args)
-            #     if expandvars:
-            #         args = path.expandvars(args)
+            args = ' '.join([
+                quote(arg)
+                for arg in args
+            ])
         cmd = Cmd.mk(
             args,
             **{
                 'env': proc_env,
                 'shell': shell,
-                **(
-                    dict(executable=executable) if shell else
-                    dict(expanduser=expanduser, expandvars=expandvars)
-                )
+                'expanduser': expanduser,
+                'expandvars': expandvars,
+                **(dict(executable=executable) if shell else {}),
             }
         )
         # print(f'{cmd=}')
@@ -187,7 +195,9 @@ def bmd(
         if copy_cmd:
             p = Popen([copy_cmd], stdin=PIPE, stdout=PIPE, stderr=PIPE, text=True)
             p.communicate(input=output)
-    print(output)
+
+    file = file or stdout
+    print(output, file=file)
 
 
 def bmd_f():

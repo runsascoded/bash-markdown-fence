@@ -3,9 +3,16 @@ from contextlib import contextmanager
 from typing import Callable
 
 from click import option
-from utz import check, process, err
+from utz import check, err, esc, process
 
 Log = Callable[..., None]
+
+
+def quote(arg: str) -> str:
+    if ' ' in arg:
+        return '"%s"' % esc(arg, '"')
+    else:
+        return arg
 
 
 @contextmanager

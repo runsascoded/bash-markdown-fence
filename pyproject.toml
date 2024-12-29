@@ -14,6 +14,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
+package-dir = {"" = "src"}
 packages = ["bmdf", "bmdf.cli", "mdcmd", "mdcmd.cli", "mktoc", "mktoc.cli"]
 
 [project.scripts]
