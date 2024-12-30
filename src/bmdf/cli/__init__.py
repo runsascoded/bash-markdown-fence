@@ -18,16 +18,14 @@ BMDF_ERR_FMT = env.get(BMDF_ERR_FMT_VAR)
 BMDF_ERR_FMT_HELP_STR = f' ("{BMDF_ERR_FMT}")' if BMDF_ERR_FMT else ''
 
 BMDF_WORKDIR_VAR = 'BMDF_WORKDIR'
-BMDF_WORKDIR = env.get(BMDF_WORKDIR_VAR)
 
 BMDF_SHELL_VAR = 'BMDF_SHELL'
-BMDF_SHELL = env.get(BMDF_SHELL_VAR)
 
 BMDF_EXPANDUSER_VAR = 'BMDF_EXPANDUSER'
-BMDF_EXPANDUSER = env.get(BMDF_EXPANDUSER_VAR)
 
 BMDF_EXPANDVARS_VAR = 'BMDF_EXPANDVARS'
-BMDF_EXPANDVARS = env.get(BMDF_EXPANDVARS_VAR)
+
+BMDF_INCLUDE_STDERR_VAR = 'BMDF_INCLUDE_STDERR'
 
 
 @command("fence", no_args_is_help=True)
@@ -36,11 +34,12 @@ BMDF_EXPANDVARS = env.get(BMDF_EXPANDVARS_VAR)
 @option('-e', '--error-fmt', default=BMDF_ERR_FMT, help=f'If the wrapped command exits non-zero, append a line of output formatted with this string. One "%d" placeholder may be used, for the returncode. Defaults to ${BMDF_ERR_FMT_VAR}{BMDF_ERR_FMT_HELP_STR}')
 @option('-E', '--env', 'env_strs', multiple=True, help="k=v env vars to set, for the wrapped command")
 @option('-f', '--fence', 'fence_level', count=True, help='Pass 0-3x to configure output style: 0x: print output lines, prepended by "# "; 1x: print a "```bash" fence block including the <command> and commented output lines; 2x: print a bash-fenced command followed by plain-fenced output lines; 3x: print a <details/> block, with command <summary/> and collapsed output lines in a plain fence.')
+@option('-i/-I', '--include-stderr/--no-include-stderr', is_flag=True, default=None, help=f'Capture and interleave both stdout and stderr streams; falls back to ${BMDF_INCLUDE_STDERR_VAR}')
 @option('-s/-S', '--shell/--no-shell', is_flag=True, default=None, help=f'Disable "shell" mode for the command; falls back to ${BMDF_SHELL_VAR}, but defaults to True if neither is set')
 @option('-t', '--fence-type', help="When -f/--fence is 2 or 3, this customizes the fence syntax type that the output is wrapped in")
 @option('-u/-U', '--expanduser/--no-expanduser', is_flag=True, default=None, help=f'Pass commands through `os.path.expanduser` before `subprocess`; falls back to ${BMDF_EXPANDUSER_VAR}')
 @option('-v/-V', '--expandvars/--no-expandvars', is_flag=True, default=None, help=f'Pass commands through `os.path.expandvars` before `subprocess`; falls back to ${BMDF_EXPANDVARS_VAR}')
-@option('-w', '--workdir', default=BMDF_WORKDIR, help=f'`cd` to this directory before executing (falls back to ${BMDF_WORKDIR_VAR}')
+@option('-w', '--workdir', help=f'`cd` to this directory before executing (falls back to ${BMDF_WORKDIR_VAR}')
 @option('-x', '--executable', help="`shell_executable` to pass to Popen pipelines (default: $SHELL)")
 @argument('command', required=True, nargs=-1)
 def bmd(
@@ -50,6 +49,7 @@ def bmd(
     error_fmt: Optional[str] = None,
     env_strs: Tuple[str, ...] = (),
     fence_level: int = 0,
+    include_stderr: bool = False,
     shell: Optional[bool] = None,
     fence_type: Optional[str] = None,
     expanduser: Optional[bool] = None,
@@ -64,6 +64,8 @@ def bmd(
         echo(ctx.get_help())
         ctx.exit()
 
+    if workdir is None:
+        workdir = env.get(BMDF_WORKDIR_VAR)
     if workdir:
         chdir(workdir)
 
@@ -85,10 +87,13 @@ def bmd(
     proc_env = { **env, **env_opts, }
 
     if expanduser is None:
-        expanduser = BMDF_EXPANDUSER
+        expanduser = env.get(BMDF_EXPANDUSER_VAR)
 
     if expandvars is None:
-        expandvars = BMDF_EXPANDVARS
+        expandvars = env.get(BMDF_EXPANDVARS_VAR)
+
+    if include_stderr is None:
+        include_stderr = env.get(BMDF_INCLUDE_STDERR_VAR, True)
 
     cmds: list[Cmd] = []
     start_idx = 0
@@ -123,7 +128,7 @@ def bmd(
 
     try:
         with env(env_opts):
-            output = pipeline(cmds)
+            output = pipeline(cmds, both=include_stderr)
             returncode = 0
     except CalledProcessError as e:
         output = e.output.decode()

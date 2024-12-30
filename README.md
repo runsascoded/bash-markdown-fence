@@ -138,7 +138,7 @@ yields:
 <!-- `bmdf -E FOO=bar echo $FOO` -->
 ```bash
 FOO=bar echo '$FOO'
-# $FOO
+# bar
 ```
 
 <details>
@@ -155,7 +155,7 @@ yields:
 <!-- `bmdf -E FOO=bar echo "$FOO"` -->
 ```bash
 FOO=bar echo '$FOO'
-# $FOO
+# bar
 ```
 
 Arg with spaces:
@@ -166,7 +166,7 @@ yields:
 <!-- `bmdf -E FOO=bar echo "FOO: $FOO"` -->
 ```bash
 FOO=bar echo 'FOO: $FOO'
-# FOO: $FOO
+# FOO: bar
 ```
 
 Escaping `$`:
@@ -177,7 +177,7 @@ yields:
 <!-- `bmdf -E FOO=bar echo "\$FOO=$FOO"` -->
 ```bash
 FOO=bar echo '\$FOO=$FOO'
-# \$FOO=$FOO
+# $FOO=bar
 ```
 
 </details>
@@ -258,36 +258,47 @@ bmd
 #   <details> block, and copy it to the clipboard.
 #
 # Options:
-#   -A, --strip-ansi              Strip ANSI escape sequences from output
-#   -C, --no-copy                 Disable copying output to clipboard (normally
-#                                 uses first available executable from
-#                                 ['pbcopy', 'xclip', 'clip']
-#   -e, --error-fmt TEXT          If the wrapped command exits non-zero, append
-#                                 a line of output formatted with this string.
-#                                 One "%d" placeholder may be used, for the
-#                                 returncode. Defaults to $BMDF_ERR_FMT
-#   -E, --env TEXT                k=v env vars to set, for the wrapped command
-#   -f, --fence                   Pass 0-3x to configure output style: 0x: print
-#                                 output lines, prepended by "# "; 1x: print a
-#                                 "```bash" fence block including the <command>
-#                                 and commented output lines; 2x: print a bash-
-#                                 fenced command followed by plain-fenced output
-#                                 lines; 3x: print a <details/> block, with
-#                                 command <summary/> and collapsed output lines
-#                                 in a plain fence.
-#   -s, --shell / -S, --no-shell  Disable "shell" mode for the command; falls
-#                                 back to $BMDF_SHELL, but defaults to True if
-#                                 neither is set
-#   -t, --fence-type TEXT         When -f/--fence is 2 or 3, this customizes the
-#                                 fence syntax type that the output is wrapped
-#                                 in
-#   -U, --no-expanduser           In non-shell mode, skip expanding user paths
-#   -V, --no-expandvars           In non-shell mode, skip expanding Bash vars
-#   -w, --workdir TEXT            `cd` to this directory before executing (falls
-#                                 back to $BMDF_WORKDIR
-#   -x, --executable TEXT         `shell_executable` to pass to Popen pipelines
-#                                 (default: $SHELL)
-#   --help                        Show this message and exit.
+#   -A, --strip-ansi                Strip ANSI escape sequences from output
+#   -C, --no-copy                   Disable copying output to clipboard
+#                                   (normally uses first available executable
+#                                   from ['pbcopy', 'xclip', 'clip']
+#   -e, --error-fmt TEXT            If the wrapped command exits non-zero,
+#                                   append a line of output formatted with this
+#                                   string. One "%d" placeholder may be used,
+#                                   for the returncode. Defaults to
+#                                   $BMDF_ERR_FMT
+#   -E, --env TEXT                  k=v env vars to set, for the wrapped command
+#   -f, --fence                     Pass 0-3x to configure output style: 0x:
+#                                   print output lines, prepended by "# "; 1x:
+#                                   print a "```bash" fence block including the
+#                                   <command> and commented output lines; 2x:
+#                                   print a bash-fenced command followed by
+#                                   plain-fenced output lines; 3x: print a
+#                                   <details/> block, with command <summary/>
+#                                   and collapsed output lines in a plain fence.
+#   -i, --include-stderr / -I, --no-include-stderr
+#                                   Capture and interleave both stdout and
+#                                   stderr streams; falls back to
+#                                   $BMDF_INCLUDE_STDERR
+#   -s, --shell / -S, --no-shell    Disable "shell" mode for the command; falls
+#                                   back to $BMDF_SHELL, but defaults to True if
+#                                   neither is set
+#   -t, --fence-type TEXT           When -f/--fence is 2 or 3, this customizes
+#                                   the fence syntax type that the output is
+#                                   wrapped in
+#   -u, --expanduser / -U, --no-expanduser
+#                                   Pass commands through `os.path.expanduser`
+#                                   before `subprocess`; falls back to
+#                                   $BMDF_EXPANDUSER
+#   -v, --expandvars / -V, --no-expandvars
+#                                   Pass commands through `os.path.expandvars`
+#                                   before `subprocess`; falls back to
+#                                   $BMDF_EXPANDVARS
+#   -w, --workdir TEXT              `cd` to this directory before executing
+#                                   (falls back to $BMDF_WORKDIR
+#   -x, --executable TEXT           `shell_executable` to pass to Popen
+#                                   pipelines (default: $SHELL)
+#   --help                          Show this message and exit.
 ```
 
 <!-- `bmdf -- mdcmd --help` -->
