@@ -222,6 +222,20 @@ and running `mdcmd` again will rewrite the same content.
 
 Note: `bmdf` (alias for `bmd -f`) is used because it wraps the output of whatever it's passed in a "Bash fence" block. You don't have to use it, but most commands will fail to output a Markdown "fence" block, and subsequent `mdcmd` invocations will fail to parse them.
 
+Scripts that output raw HTML also work, e.g. [print-table.py](test/print-table.py) generates this table:
+<!-- `python test/print-table.py` -->
+<table>
+  <tr>
+    <th>header 1</th>
+    <th>header 2</th>
+  </tr>
+  <tr>
+    <td>cell 1</td>
+    <td>cell 2</td>
+  </tr>
+</table>
+
+
 ### `mktoc`: update table of contents <a id="mktoc"></a>
 Put a block like this in your README.md:
 ````

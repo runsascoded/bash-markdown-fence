@@ -12,7 +12,8 @@ from utz import process, err
 
 from bmdf.utils import amend_opt, amend_check, amend_run, inplace_opt, no_cwd_tmpdir_opt
 
-RGX = re.compile(r'<!-- `(?P<cmd>[^`]+)` -->')
+CMD_LINE_RGX = re.compile(r'<!-- `(?P<cmd>[^`]+)` -->')
+HTML_OPEN_RGX = re.compile(r'<(?P<tag>\w+)(?: +\w+(?:="[^"]*")?)* *>.*')
 Write = Callable[[str], None]
 
 DEFAULT_FILE_ENV_VAR = 'MDCMD_DEFAULT_PATH'
@@ -29,7 +30,7 @@ def process_path(
         lines = map(lambda line: line.rstrip('\n'), fd)
         for line in lines:
             write(line)
-            if not (m := RGX.match(line)):
+            if not (m := CMD_LINE_RGX.match(line)):
                 continue
 
             cmd_str = m.group('cmd')
@@ -47,8 +48,9 @@ def process_path(
             cmd = shlex.split(cmd_str)
             try:
                 line = next(lines)
-                if line.startswith("<details>"):
-                    close_lines = ["</details>"]
+                if html_match := HTML_OPEN_RGX.fullmatch(line):
+                    tag = html_match['tag']
+                    close_lines = [f"</{tag}>"]
                 elif line.startswith("```"):
                     if cmd[0] == "bmdff":
                         close_lines = ["```", re.compile("```\w+"), "```"]  # Skip two fences
