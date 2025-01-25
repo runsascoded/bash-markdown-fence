@@ -372,10 +372,10 @@ mktoc --help
 #   --help                          Show this message and exit.
 ```
 
-(these blocks are self-hosted, using `bmdf` and `mdcmd`; likewise [the table of contents up top](#toc), via `mktoc` 😎)
-
 ## Examples <a id="examples"></a>
-These repos' READMEs use `bmdf` / `mdcmd` / `mktoc` to execute README examples (and in some cases are verified by GitHub Actions):
+The examples in this file are rendered using [`bmdf`] and [`mdcmd`], and [the TOC](#toc) is rendered using [`mktoc`]. Both are verified by the [`ci.yml`] GitHub Action.
+
+These repos' READMEs also use [`bmdf`] / [`mdcmd`] / [`mktoc`] to execute/verify examples commands (and in some cases are also verified by GitHub Actions):
 
 - [runsascoded/juq]
 - [runsascoded/utz]
@@ -385,6 +385,11 @@ These repos' READMEs use `bmdf` / `mdcmd` / `mktoc` to execute README examples (
 - [ryan-williams/parquet-helpers] ([GHA][pqt-helpers GHA])
 - [ryan-williams/tdbs-dask]
 - [TileDB-Inc/scverse-ml-workshop-2024]
+
+[`ci.yml`]: .github/workflows/ci.yml
+[`bmdf`]: #bmdf
+[`mdcmd`]: #mdcmd
+[`mktoc`]: #mktoc
 
 [runsascoded/utz]: https://github.com/runsascoded/utz?tab=readme-ov-file#utz
 [TileDB-Inc/scverse-ml-workshop-2024]: https://github.com/TileDB-Inc/scverse-ml-workshop-2024?tab=readme-ov-file#training-models-on-atlas-scale-single-cell-datasets
