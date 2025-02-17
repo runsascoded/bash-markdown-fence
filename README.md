@@ -329,6 +329,8 @@ mdcmd --help
 # Options:
 #   -a, --amend                     Squash changes onto the previous Git commit;
 #                                   suitable for use with `git rebase -x`
+#   -C, --no-concurrent             Run commands in sequence (by default, they
+#                                   are run concurrently)
 #   -i, --inplace / -I, --no-inplace
 #                                   Edit the file in-place
 #   -n, --dry-run                   Print the commands that would be run, but

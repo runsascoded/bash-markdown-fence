@@ -1,14 +1,19 @@
+from __future__ import annotations
+
+import asyncio
+from asyncio import gather
 import re
 import shlex
+from collections.abc import Coroutine
 from contextlib import contextmanager
 from functools import partial
 from os import environ as env, rename, getcwd
 from os.path import basename, join, exists
 from tempfile import TemporaryDirectory
-from typing import Generator, Callable, Optional, Tuple
+from typing import Generator, Callable, Optional, Tuple, Any
 
 from click import command, option, argument
-from utz import process, err
+from utz import proc, err
 
 from bmdf.utils import amend_opt, amend_check, amend_run, inplace_opt, no_cwd_tmpdir_opt
 
@@ -19,13 +24,28 @@ Write = Callable[[str], None]
 DEFAULT_FILE_ENV_VAR = 'MDCMD_DEFAULT_PATH'
 DEFAULT_FILE = 'README.md'
 
-def process_path(
+
+async def async_text(cmd: str) -> str:
+    text = await proc.aio.text(cmd)
+    return text.rstrip('\n')
+
+
+async def async_line(arg: str) -> str:
+    return arg
+
+
+async def process_path(
     path: str,
     dry_run: bool,
     include_rgxs: Tuple[str, ...],
     exclude_rgxs: Tuple[str, ...],
-    write: Write,
+    write_fn: Write,
+    concurrent: bool = True,
 ):
+    blocks: list[Coroutine[None, None, str]] = []
+    def write(arg: str | Coroutine[Any, Any, str]):
+        blocks.append(async_line(arg) if isinstance(arg, str) else arg)
+
     with open(path, 'r') as fd:
         lines = map(lambda line: line.rstrip('\n'), fd)
         for line in lines:
@@ -69,10 +89,16 @@ def process_path(
                 while close.fullmatch(line) if isinstance(close, re.Pattern) else line != close:
                     line = next(lines)
 
-            output = process.output(cmd).decode().rstrip('\n')
-            write(output)
+            if concurrent:
+                write(async_text(cmd))
+            else:
+                write(proc.text(cmd).rstrip('\n'))
             if close_lines is None:
                 write("")
+
+    gathered = await gather(*blocks)
+    for line in gathered:
+        write_fn(line)
 
 
 @contextmanager
@@ -100,6 +126,7 @@ def out_fd(
 
 @command('mdcmd')
 @amend_opt
+@option('-C', '--no-concurrent', is_flag=True, help='Run commands in sequence (by default, they are run concurrently)')
 @inplace_opt
 @option('-n', '--dry-run', is_flag=True, help="Print the commands that would be run, but don't execute them")
 @no_cwd_tmpdir_opt
@@ -109,6 +136,7 @@ def out_fd(
 @argument('out_path', required=False)
 def main(
     amend: bool,
+    no_concurrent: bool,
     inplace: Optional[bool],
     dry_run: bool,
     no_cwd_tmpdir: bool,
@@ -132,12 +160,15 @@ def main(
 
     tmpdir = None if no_cwd_tmpdir else getcwd()
     with out_fd(inplace, path, out_path, dir=tmpdir) as write:
-        process_path(
-            path=path,
-            dry_run=dry_run,
-            include_rgxs=include_rgxs,
-            exclude_rgxs=exclude_rgxs,
-            write=write,
+        asyncio.run(
+            process_path(
+                path=path,
+                dry_run=dry_run,
+                include_rgxs=include_rgxs,
+                exclude_rgxs=exclude_rgxs,
+                write_fn=write,
+                concurrent=not no_concurrent,
+            )
         )
 
     amend_run(amend)
