@@ -17,7 +17,7 @@ from utz import proc, err
 
 from bmdf.utils import amend_opt, amend_check, amend_run, inplace_opt, no_cwd_tmpdir_opt
 
-CMD_LINE_RGX = re.compile(r'<!-- `(?P<cmd>[^`]+)` -->')
+CMD_LINE_RGX = re.compile(r'<!-- `(?P<cmd>.+)` -->')
 HTML_OPEN_RGX = re.compile(r'<(?P<tag>\w+)(?: +\w+(?:="[^"]*")?)* *>.*')
 Write = Callable[[str], None]
 
