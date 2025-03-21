@@ -8,12 +8,13 @@ from collections.abc import Coroutine
 from contextlib import contextmanager
 from functools import partial
 from os import environ as env, rename, getcwd
-from os.path import basename, join, exists
+from os.path import basename, exists, join
 from tempfile import TemporaryDirectory
-from typing import Generator, Callable, Optional, Tuple, Any
+from typing import Any, Callable, Generator, Optional
 
 from click import command, option, argument
-from utz import proc, err
+from utz import err, Patterns, proc
+from utz.cli import inc_exc, multi
 
 from bmdf.utils import amend_opt, amend_check, amend_run, inplace_opt, no_cwd_tmpdir_opt
 
@@ -37,8 +38,7 @@ async def async_line(arg: str) -> str:
 async def process_path(
     path: str,
     dry_run: bool,
-    include_rgxs: Tuple[str, ...],
-    exclude_rgxs: Tuple[str, ...],
+    patterns: Patterns,
     write_fn: Write,
     concurrent: bool = True,
 ):
@@ -54,12 +54,8 @@ async def process_path(
                 continue
 
             cmd_str = m.group('cmd')
-            if include_rgxs:
-                if not any(re.search(rgx, cmd_str) for rgx in include_rgxs):
-                    continue
-            if exclude_rgxs:
-                if any(re.search(rgx, cmd_str) for rgx in exclude_rgxs):
-                    continue
+            if patterns and not patterns(cmd_str):
+                continue
 
             if dry_run:
                 err(f"Would run: {cmd_str}")
@@ -130,8 +126,10 @@ def out_fd(
 @inplace_opt
 @option('-n', '--dry-run', is_flag=True, help="Print the commands that would be run, but don't execute them")
 @no_cwd_tmpdir_opt
-@option('-x', '--execute', 'include_rgxs', multiple=True, help='Only execute commands that match these regular expressions')
-@option('-X', '--exclude', 'exclude_rgxs', multiple=True, help="Only execute commands that don't match these regular expressions")
+@inc_exc(
+    multi('-x', '--execute', help='Only execute commands that match these regular expressions'),
+    multi('-X', '--exclude', help="Only execute commands that don't match these regular expressions"),
+)
 @argument('path', required=False)
 @argument('out_path', required=False)
 def main(
@@ -140,8 +138,7 @@ def main(
     inplace: Optional[bool],
     dry_run: bool,
     no_cwd_tmpdir: bool,
-    include_rgxs: Tuple[str, ...],
-    exclude_rgxs: Tuple[str, ...],
+    patterns: Patterns,
     path: str,
     out_path: Optional[str],
 ):
@@ -164,8 +161,7 @@ def main(
             process_path(
                 path=path,
                 dry_run=dry_run,
-                include_rgxs=include_rgxs,
-                exclude_rgxs=exclude_rgxs,
+                patterns=patterns,
                 write_fn=write,
                 concurrent=not no_concurrent,
             )
