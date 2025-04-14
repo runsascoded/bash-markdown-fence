@@ -115,7 +115,6 @@ def bmd(
                 **(dict(executable=executable) if shell else {}),
             }
         )
-        # print(f'{cmd=}')
         cmds.append(cmd)
         start_idx = idx + 1
 
@@ -131,7 +130,9 @@ def bmd(
             output = pipeline(cmds, both=include_stderr)
             returncode = 0
     except CalledProcessError as e:
-        output = e.output.decode()
+        output = e.output
+        if isinstance(output, bytes):
+            output = output.decode()
         returncode = e.returncode
 
     lines = [
