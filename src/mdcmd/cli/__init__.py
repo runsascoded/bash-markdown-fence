@@ -26,7 +26,7 @@ DEFAULT_FILE_ENV_VAR = 'MDCMD_DEFAULT_PATH'
 DEFAULT_FILE = 'README.md'
 
 
-async def async_text(cmd: str) -> str:
+async def async_text(cmd: str | list[str]) -> str:
     text = await proc.aio.text(cmd)
     return text.rstrip('\n')
 

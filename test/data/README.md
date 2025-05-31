@@ -22,4 +22,3 @@ A dynamically generated h3 <a id="header3-html"></a>
 </h3>
 
 ddd
-

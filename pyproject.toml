@@ -13,6 +13,11 @@ dependencies = [
     "click>=8",
 ]
 
+[project.optional-dependencies]
+test = [
+    "pytest",
+ ]
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 packages = ["bmdf", "bmdf.cli", "mdcmd", "mdcmd.cli", "mktoc", "mktoc.cli"]
