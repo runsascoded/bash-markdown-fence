@@ -10,7 +10,10 @@ from click import argument, command, option, UsageError
 from bmdf.utils import amend_opt, amend_check, amend_run, inplace_opt, no_cwd_tmpdir_opt
 from mdcmd.cli import out_fd, Write
 
-RGX = r'(?P<level>#{2,}) (?P<title>.*) <a id="(?P<id>[^"]+)"></a>'
+TITLE_ID = r'(?P<title>.*) <a id="(?P<id>[^"]+)"></a>'
+TITLE_ID_RGX = re.compile(TITLE_ID)
+MD_RGX = re.compile(r'(?P<level>#{2,}) ' + TITLE_ID)
+HTML_RGX = re.compile(r'<(?P<tag>h\d)>')
 DEFAULT_FILE_ENV_VAR = 'MKTOC_DEFAULT_PATH'
 DEFAULT_FILE = 'README.md'
 
@@ -55,11 +58,23 @@ def main(
         lines = [ line.rstrip('\n') for line in f.readlines() ]
 
     def write_toc(lines: list[str], out: Write):
-        for line in lines:
-            m = re.fullmatch(RGX, line)
-            if not m:
+        lines_iter = iter(lines)
+        for line in lines_iter:
+            if m := MD_RGX.fullmatch(line):
+                level, title, id = len(m['level']), m['title'], m['id']
+            elif m := HTML_RGX.fullmatch(line):
+                level = int(m['tag'][1])
+                body = next(lines_iter)
+                tag = m['tag']
+                if m := TITLE_ID_RGX.fullmatch(body):
+                    title, id = m['title'], m['id']
+                else:
+                    continue
+                close = next(lines_iter)
+                if close != f'</{tag}>':
+                    raise RuntimeError(f"Expected closing tag </{tag}> but found {close}")
+            else:
                 continue
-            level, title, id = len(m['level']), m['title'], m['id']
             indent = ' ' * (indent_size * (level - 2))
             # Flatten links in header titles (for TOC)
             title = re.sub(r'\[([^]]+)](?:\([^)]+\))?', r'\1', title)
