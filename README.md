@@ -9,7 +9,11 @@ seq 3
 # 2
 # 3
 ```
-☝️ This block is updated programmatically (by [`mdcmd`]), and verified [in CI][ci mdcmd].
+<!-- `python test/print-ci-yml-ref.py mdcmd` -->
+<p>
+
+☝️ This block is updated programmatically (by [`mdcmd`]), and verified [in CI](.github/workflows/ci.yml#L32-L35).
+</p>
 
 [![](https://img.shields.io/pypi/v/bmdf?label=bmdf&color=blue)][bmdf]
 
@@ -30,7 +34,11 @@ seq 3
 - [`mktoc`: Markdown Table of Contents](#mktoc)
 - [Examples](#examples)
 <!-- /toc -->
-☝️ This TOC is generated programmatically (by [`mktoc`]), and verified [in CI][ci mktoc].
+<!-- `python test/print-ci-yml-ref.py mktoc` -->
+<p>
+
+☝️ This TOC is generated programmatically (by [`mktoc`]), and verified [in CI](.github/workflows/ci.yml#L22-L25).
+</p>
 
 ## Overview <a id="overview"></a>
 This package provides 3 CLIs:
@@ -470,5 +478,3 @@ These repos' READMEs also use [`bmdf`] / [`mdcmd`] / [`mktoc`] to execute/verify
 [bmdf]: https://pypi.org/project/bmdf/
 [pipx]: https://pipx.pypa.io/stable/
 [uv]: https://docs.astral.sh/uv/
-[ci mdcmd]: .github/workflows/ci.yml#L32-L35
-[ci mktoc]: .github/workflows/ci.yml#L22-L25
