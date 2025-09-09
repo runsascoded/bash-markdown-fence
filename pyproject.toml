@@ -1,6 +1,6 @@
 [project]
 name = "bmdf"
-description = "Embed commands, their output, and tables of contents in markdown"
+description = "Execute commands in Markdown files, embed output, generate TOCs"
 version = "0.6.1"
 readme = "README.md"
 authors = [
