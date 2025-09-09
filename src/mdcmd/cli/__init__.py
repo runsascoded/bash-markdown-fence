@@ -85,16 +85,18 @@ async def process_path(
                 while close.fullmatch(line) if isinstance(close, re.Pattern) else line != close:
                     line = next(lines)
 
-            if concurrent:
-                write(async_text(cmd))
-            else:
-                write(proc.text(cmd).rstrip('\n'))
+            write(async_text(cmd))
             if close_lines is None:
                 write("")
 
-    gathered = await gather(*blocks)
-    for line in gathered:
-        write_fn(line)
+    if concurrent:
+        gathered = await gather(*blocks)
+        for line in gathered:
+            write_fn(line)
+    else:
+        for block in blocks:
+            line = await block
+            write_fn(line)
 
 
 @contextmanager
