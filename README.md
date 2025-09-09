@@ -27,6 +27,14 @@ This package provides 3 CLIs:
 - `mktoc`: update Markdown table of contents (with custom "id" anchors)
 
 ## Install <a id="install"></a>
+
+Global install via [pipx] or [uv] (recommended):
+```bash
+pipx install bmdf
+# or: uv tool install bmdf
+```
+
+You can also install in the current (v)env:
 ```bash
 pip install bmdf
 ```
@@ -405,3 +413,5 @@ These repos' READMEs also use [`bmdf`] / [`mdcmd`] / [`mktoc`] to execute/verify
 [runsascoded/juq]: https://github.com/runsascoded/juq
 
 [bmdf]: https://pypi.org/project/bmdf/
+[pipx]: https://pipx.pypa.io/stable/
+[uv]: https://docs.astral.sh/uv/

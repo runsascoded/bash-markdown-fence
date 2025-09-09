@@ -69,7 +69,7 @@ async def process_path(
                     close_lines = [f"</{tag}>"]
                 elif line.startswith("```"):
                     if cmd[0] == "bmdff":
-                        close_lines = ["```", re.compile("```\w+"), "```"]  # Skip two fences
+                        close_lines = ["```", re.compile(r"```\w+"), "```"]  # Skip two fences
                     else:
                         close_lines = ["```"]
                 elif not line:

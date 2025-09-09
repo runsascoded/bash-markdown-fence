@@ -4,17 +4,21 @@ on:
     branches: [main]
     tags: ["v*.*.*"]
   workflow_dispatch:
+
 jobs:
-  ci:
+  test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+    - uses: astral-sh/setup-uv@v4
       with:
-        python-version: '3.9'
-        cache: pip
-    - name: Install bmdf
-      run: pip install -e .[test]
+        enable-cache: true
+    - run: uv python install ${{ matrix.python-version }}
+    - name: Install bmdf globally via uv tool
+      run: uv tool install --python python${{ matrix.python-version }} .
     - name: Verify README TOC is up to date
       run: |
         mktoc
@@ -29,14 +33,24 @@ jobs:
       run: |
         mdcmd
         git diff --exit-code
+    - name: Install test dependencies
+      run: uv sync --python ${{ matrix.python-version }} --extra test
     - name: Run tests
-      run: pytest test
-    - name: Release
-      if: startsWith(github.ref, 'refs/tags/')
+      run: uv run pytest test
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+    - uses: actions/checkout@v4
+    - uses: astral-sh/setup-uv@v4
+    - run: uv python install 3.12
+    - name: Build and publish
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
       run: |
-        pip install build twine
+        uv pip install --system build twine
         python -m build
         twine upload dist/*
