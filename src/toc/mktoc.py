@@ -42,7 +42,7 @@ def main(
         path = env.get(DEFAULT_FILE_ENV_VAR, DEFAULT_FILE)
         if inplace is None:
             inplace = True
-    
+
     # Don't check exists() here - let mdcmd handle it
     # This allows for proper error messages and handling in different directories
 
