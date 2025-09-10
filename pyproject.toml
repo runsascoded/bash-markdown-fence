@@ -20,7 +20,7 @@ test = [
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["bmdf", "bmdf.cli", "mdcmd", "mdcmd.cli", "mktoc", "mktoc.cli"]
+packages = ["bmdf", "bmdf.cli", "mdcmd", "mdcmd.cli", "toc"]
 
 [project.scripts]
 bmd = "bmdf.cli:bmd"
@@ -28,7 +28,8 @@ bmdf = "bmdf.cli:bmd_f"
 bmdff = "bmdf.cli:bmd_ff"
 bmdfff = "bmdf.cli:bmd_fff"
 mdcmd = "mdcmd.cli:main"
-mktoc = "mktoc.cli:main"
+mktoc = "toc.mktoc:main"
+toc = "toc:main"
 
 [project.urls]
 "Homepage" = "https://github.com/runsascoded/bash-markdown-fence"

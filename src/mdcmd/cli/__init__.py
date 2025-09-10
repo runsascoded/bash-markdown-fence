@@ -26,8 +26,8 @@ DEFAULT_FILE_ENV_VAR = 'MDCMD_DEFAULT_PATH'
 DEFAULT_FILE = 'README.md'
 
 
-async def async_text(cmd: str | list[str]) -> str:
-    text = await proc.aio.text(cmd)
+async def async_text(cmd: str | list[str], env: dict | None = None) -> str:
+    text = await proc.aio.text(cmd, env=env)
     return text.rstrip('\n')
 
 
@@ -62,6 +62,11 @@ async def process_path(
                 continue
 
             cmd = shlex.split(cmd_str)
+            # Set environment variable for the current markdown file
+            import os
+            cmd_env = os.environ.copy()
+            cmd_env['MDCMD_FILE'] = path
+
             try:
                 line = next(lines)
                 if html_match := HTML_OPEN_RGX.fullmatch(line):
@@ -72,6 +77,16 @@ async def process_path(
                         close_lines = ["```", re.compile(r"```\w+"), "```"]  # Skip two fences
                     else:
                         close_lines = ["```"]
+                elif line.startswith("- "):
+                    # Markdown list block - skip all list items
+                    skip_lines = []
+                    while line and (line.startswith("- ") or re.match(r"^ {2,}", line)):
+                        skip_lines.append(line)
+                        try:
+                            line = next(lines)
+                        except StopIteration:
+                            break
+                    close_lines = None
                 elif not line:
                     close_lines = None
                 else:
@@ -85,7 +100,7 @@ async def process_path(
                 while close.fullmatch(line) if isinstance(close, re.Pattern) else line != close:
                     line = next(lines)
 
-            write(async_text(cmd))
+            write(async_text(cmd, env=cmd_env))
             if close_lines is None:
                 write("")
 

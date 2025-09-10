@@ -46,7 +46,7 @@ def main():
     import os
 
     if len(sys.argv) < 2:
-        print("Usage: print-ci-yml-ref.py {mdcmd|mktoc}", file=sys.stderr)
+        print("Usage: print-ci-yml-ref.py {mdcmd|toc}", file=sys.stderr)
         sys.exit(1)
 
     tool = sys.argv[1]
@@ -82,7 +82,7 @@ def main():
     elif tool == "mktoc" and "mktoc" in lines:
         start, end = lines["mktoc"]
         print("<p>\n")
-        print(f'☝️ This TOC is generated programmatically (by [`mktoc`]), and verified [in CI]({ci_path}#L{start}-L{end}).')
+        print(f'☝️ This TOC is generated programmatically (by [`mdcmd`] and [`toc`]), and verified [in CI]({ci_path}#L{start}-L{end}).')
         print("</p>")
     else:
         print(f"Unknown tool or not found: {tool}", file=sys.stderr)
