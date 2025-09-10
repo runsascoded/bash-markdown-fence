@@ -106,7 +106,7 @@ def main():
         except subprocess.CalledProcessError:
             ref = "main"
 
-        base_url = f"https://github.com/runsascoded/bash-markdown-fence/blob/{ref}"
+        base_url = f"https://github.com/runsascoded/mdcmd/blob/{ref}"
         ci_path = f"{base_url}/.github/workflows/ci.yml"
         # Use the plain view with line numbers for PyPI too
         readme_base = f"{base_url}/README.md?plain=1"

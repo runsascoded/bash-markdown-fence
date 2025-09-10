@@ -1,5 +1,5 @@
-# `bmdf`
-**B**ash **m**ark**d**own **f**ences: execute commands in Markdown files, embed output, generate TOCs
+# `mdcmd`
+Execute commands in Markdown files, embed output, generate TOCs
 
 e.g.:
 <!-- `bmdf seq 3` -->
@@ -16,7 +16,7 @@ seq 3
 ☝️ This block is updated programmatically by [`mdcmd`] (and verified [in CI](.github/workflows/ci.yml#L32-L35); see [raw README.md](README.md?plain=1#L5-L11)).
 </p>
 
-[![](https://img.shields.io/pypi/v/bmdf?label=bmdf&color=blue)][bmdf]
+[![](https://img.shields.io/pypi/v/mdcmd?label=mdcmd&color=blue)][mdcmd] (formerly: [`bmdf`][bmdf])
 
 <a id="toc"></a>
 <!-- `toc` -->
@@ -54,13 +54,13 @@ This package provides 3 CLIs:
 
 Global install via [pipx] or [uv] (recommended):
 ```bash
-pipx install bmdf
-# or: uv tool install bmdf
+pipx install mdcmd
+# or: uv tool install mdcmd
 ```
 
 You can also install in the current (v)env:
 ```bash
-pip install bmdf
+pip install mdcmd
 ```
 
 ## `mdcmd`: execute commands in Markdown files, embed output <a id="mdcmd"></a>
@@ -469,6 +469,7 @@ These repos' READMEs also use [`bmdf`] / [`mdcmd`] / [`toc`] to execute example 
 [runsascoded/dvc-utils]: https://github.com/runsascoded/dvc-utils
 [runsascoded/juq]: https://github.com/runsascoded/juq
 
+[mdcmd]: https://pypi.org/project/mdcmd/
 [bmdf]: https://pypi.org/project/bmdf/
 [pipx]: https://pipx.pypa.io/stable/
 [uv]: https://docs.astral.sh/uv/
