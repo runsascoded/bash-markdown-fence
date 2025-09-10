@@ -44,6 +44,8 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
     - uses: actions/checkout@v4
+    - name: Fetch tag annotation
+      run: git fetch origin tag ${{ github.ref_name }} --force
     - uses: astral-sh/setup-uv@v4
     - run: uv python install 3.12
     - name: Build package
