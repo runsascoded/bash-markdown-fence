@@ -41,6 +41,43 @@ def find_step_lines(ci_path=".github/workflows/ci.yml"):
     return results
 
 
+def find_readme_lines(tool):
+    """Find line numbers for the relevant section in README.md."""
+    try:
+        content = Path("README.md").read_text()
+        lines = content.splitlines()
+
+        if tool == "mdcmd":
+            # 1. "<!-- `bmdf seq 3` -->" through first subsequent "```"
+            for i, line in enumerate(lines, 1):
+                if "<!-- `bmdf seq 3` -->" in line:
+                    start = i
+                    # Find first subsequent ```
+                    for j in range(i+1, len(lines)+1):
+                        if j > len(lines):
+                            break
+                        if lines[j-1] == "```":
+                            return (start, j)
+                    break
+
+        elif tool in ["toc", "mktoc"]:
+            # 2. "<!-- `toc` -->" until (exclusive) first subsequent empty line
+            for i, line in enumerate(lines, 1):
+                if "<!-- `toc` -->" in line:
+                    start = i
+                    # Find first subsequent empty line
+                    for j in range(i+1, len(lines)+1):
+                        if j > len(lines):
+                            return (start, j-1)  # End of file
+                        if not lines[j-1].strip():
+                            return (start, j-1)  # Line before empty line
+                    break
+
+    except:
+        pass
+    return None
+
+
 def main():
     """Generate the update notes."""
     import os
@@ -51,6 +88,7 @@ def main():
 
     tool = sys.argv[1]
     lines = find_step_lines()
+    readme_lines = find_readme_lines(tool)
 
     # Check env var for absolute URLs (for PyPI builds)
     if os.getenv("BMDF_ABSOLUTE_URLS"):
@@ -70,19 +108,29 @@ def main():
 
         base_url = f"https://github.com/runsascoded/bash-markdown-fence/blob/{ref}"
         ci_path = f"{base_url}/.github/workflows/ci.yml"
+        # Use the plain view with line numbers for PyPI too
+        readme_base = f"{base_url}/README.md?plain=1"
     else:
         # Use relative URLs by default
         ci_path = ".github/workflows/ci.yml"
+        readme_base = "README.md?plain=1"
+
+    # Add line numbers if we found them
+    if readme_lines:
+        start, end = readme_lines
+        readme_link = f"[raw README.md]({readme_base}#L{start}-L{end})"
+    else:
+        readme_link = f"[raw README.md]({readme_base})"
 
     if tool == "mdcmd" and "mdcmd" in lines:
         start, end = lines["mdcmd"]
         print("<p>\n")
-        print(f'☝️ This block is updated programmatically (by [`mdcmd`]), and verified [in CI]({ci_path}#L{start}-L{end}).')
+        print(f'☝️ This block is updated programmatically by [`mdcmd`] (and verified [in CI]({ci_path}#L{start}-L{end}); see {readme_link}).')
         print("</p>")
-    elif tool == "mktoc" and "mktoc" in lines:
+    elif tool in ["mktoc", "toc"] and "mktoc" in lines:
         start, end = lines["mktoc"]
         print("<p>\n")
-        print(f'☝️ This TOC is generated programmatically (by [`mdcmd`] and [`toc`]), and verified [in CI]({ci_path}#L{start}-L{end}).')
+        print(f'☝️ This TOC is generated programmatically by [`mdcmd`] and [`toc`] (and verified [in CI]({ci_path}#L{start}-L{end}); see {readme_link}).')
         print("</p>")
     else:
         print(f"Unknown tool or not found: {tool}", file=sys.stderr)

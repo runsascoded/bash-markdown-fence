@@ -9,10 +9,11 @@ seq 3
 # 2
 # 3
 ```
+
 <!-- `python test/print-ci-yml-ref.py mdcmd` -->
 <p>
 
-☝️ This block is updated programmatically (by [`mdcmd`]), and verified [in CI](.github/workflows/ci.yml#L32-L35).
+☝️ This block is updated programmatically by [`mdcmd`] (and verified [in CI](.github/workflows/ci.yml#L32-L35); see [raw README.md](README.md?plain=1#L5-L11)).
 </p>
 
 [![](https://img.shields.io/pypi/v/bmdf?label=bmdf&color=blue)][bmdf]
@@ -37,7 +38,7 @@ seq 3
 <!-- `python test/print-ci-yml-ref.py toc` -->
 <p>
 
-☝️ This TOC is generated programmatically (by [`mdcmd`] and [`toc`]), and verified [in CI](.github/workflows/ci.yml#L22-L25).
+☝️ This TOC is generated programmatically by [`mdcmd`] and [`toc`] (and verified [in CI](.github/workflows/ci.yml#L22-L25); see [raw README.md](README.md?plain=1#L22-L36)).
 </p>
 
 ## Overview <a id="overview"></a>
