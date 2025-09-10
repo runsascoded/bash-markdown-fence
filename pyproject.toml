@@ -1,7 +1,7 @@
 [project]
 name = "bmdf"
 description = "Execute commands in Markdown files, embed output, generate TOCs"
-version = "0.6.1"
+version = "0.6.2"
 readme = "README.md"
 authors = [
     { name = "Ryan Williams", email = "ryan@runsascoded.com" }
