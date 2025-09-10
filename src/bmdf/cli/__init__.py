@@ -182,9 +182,12 @@ def bmd(
             log(cmd_str)
             print_commented_lines()
     elif fence_level == 2:
+        log('<div class="bmdff">')
+        log('')  # Blank line for markdown parsing inside HTML
         with fence('bash', log=log):
             log(cmd_str)
         print_fenced_lines(typ=fence_type)
+        log('</div>')
     elif fence_level == 3:
         with details(code=cmd_str, log=log):
             print_fenced_lines(typ=fence_type)

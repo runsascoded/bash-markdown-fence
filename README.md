@@ -257,6 +257,8 @@ then [run `mdcmd`][`mdcmd`] to update your README containing this embedded comma
 becomes:
 
 <!-- `bmdff seq 5` -->
+<div class="bmdff">
+
 ```bash
 seq 5
 ```
@@ -267,6 +269,7 @@ seq 5
 4
 5
 ```
+</div>
 
 ### `bmdfff` (`bmd -fff`): &lt;details&gt; mode <a id="bmdfff"></a>
 
@@ -421,7 +424,7 @@ Options:
 Put a line like this in your README.md:
   ```
   <!-- `toc` -->
-  
+
   ```
 
 Then put empty `<a>` tags next to the headings you want to include, e.g.:
