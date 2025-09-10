@@ -18,7 +18,7 @@ seq 3
 [![](https://img.shields.io/pypi/v/bmdf?label=bmdf&color=blue)][bmdf]
 
 <a id="toc"></a>
-<!-- toc -->
+<!-- `toc` -->
 - [Overview](#overview)
 - [Install](#install)
 - [`mdcmd`: execute commands in Markdown files, embed output](#mdcmd)
@@ -33,7 +33,7 @@ seq 3
     - [`-w/--workdir` / `$BMDF_WORKDIR`](#workdir)
 - [`mktoc`: Markdown Table of Contents](#mktoc)
 - [Examples](#examples)
-<!-- /toc -->
+
 <!-- `python test/print-ci-yml-ref.py mktoc` -->
 <p>
 
@@ -418,11 +418,11 @@ Options:
 ```
 </details>
 
-Put a block like this in your README.md:
-````
-<!-- toc -->
-<!-- /toc -->
-````
+Put a line like this in your README.md:
+  ```
+  <!-- `toc` -->
+  
+  ```
 
 Then put empty `<a>` tags next to the headings you want to include, e.g.:
 
@@ -440,7 +440,7 @@ mktoc -i README.md
 mktoc
 ```
 
-And the `<!-- toc  -->` section will have a table of contents injected (like the one at the top of this file).
+And `mktoc` will insert a table of contents there (like the one at the top of this file), along with the closing `<!-- /toc -->` tag.
 
 ## Examples <a id="examples"></a>
 The examples in this file are rendered using [`bmdf`] and [`mdcmd`], and [the TOC](#toc) is rendered using [`mktoc`]. Both are verified by the [`ci.yml`] GitHub Action.
