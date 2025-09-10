@@ -19,17 +19,13 @@ jobs:
     - run: uv python install ${{ matrix.python-version }}
     - name: Install bmdf globally via uv tool
       run: uv tool install --python python${{ matrix.python-version }} .
-    - name: Verify README TOC is up to date
-      run: |
-        mktoc
-        git diff --exit-code
     - name: Verify bash functions work
       run: |
         wcl() { wc -l "$@"; }
         export -f wcl
         export SHELL
         bmdf seq 10 '|' wcl
-    - name: Verify README examples are up to date
+    - name: Verify README examples and TOC are up to date
       run: |
         mdcmd
         git diff --exit-code
