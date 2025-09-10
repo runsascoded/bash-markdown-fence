@@ -15,7 +15,6 @@ build_editable = _orig.build_editable
 def _process_readme():
     """Process README.md to use absolute URLs for PyPI builds."""
     import subprocess
-    import re
 
     # Check if we're on a tag
     try:
@@ -35,25 +34,34 @@ def _process_readme():
         print("Not on a tag, skipping README processing")
         return
 
-    # Read current README
-    readme_path = Path("README.md")
-    if not readme_path.exists():
-        return
+    # Run mdcmd with BMDF_ABSOLUTE_URLS=1 to regenerate all content with absolute URLs
+    print("Regenerating README content with absolute URLs...")
+    try:
+        env = os.environ.copy()
+        env['BMDF_ABSOLUTE_URLS'] = '1'
 
-    content = readme_path.read_text()
+        # Install package in editable mode first so mdcmd is available
+        install_result = subprocess.run(
+            ["python", "-m", "pip", "install", "-e", "."],
+            capture_output=True,
+            text=True,
+            check=False  # Don't fail if this doesn't work
+        )
 
-    # Use the tag in the URL
-    base_url = f"https://github.com/runsascoded/bash-markdown-fence/blob/{tag}"
-
-    # Replace relative .github/workflows/ci.yml links
-    pattern = r'\[in CI\]\(\.github/workflows/ci\.yml(#L\d+-L\d+)\)'
-    replacement = rf'[in CI]({base_url}/.github/workflows/ci.yml\1)'
-
-    new_content = re.sub(pattern, replacement, content)
-
-    if new_content != content:
-        print(f"Updated README with absolute URLs for tag {tag}")
-        readme_path.write_text(new_content)
+        # Try to run mdcmd
+        result = subprocess.run(
+            ["python", "-m", "mdcmd.cli", "-i", "README.md"],
+            env=env,
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        print("Successfully updated README with absolute URLs")
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to update README: {e}")
+        print(f"stdout: {e.stdout}")
+        print(f"stderr: {e.stderr}")
+        # Continue with build even if this fails
 
 
 def build_wheel(wheel_directory, config_settings=None, metadata_directory=None):
