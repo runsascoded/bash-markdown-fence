@@ -38,5 +38,4 @@ toc = "toc:main"
 
 [build-system]
 requires = ["setuptools>=45", "wheel"]
-build-backend = "build_backend"
-backend-path = ["."]
+build-backend = "setuptools.build_meta"

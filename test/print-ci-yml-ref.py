@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
-"""Generate the 'updated programmatically' notes with correct CI links."""
+"""Generate the 'updated programmatically' notes with correct CI links.
+
+When README_ABSOLUTE_URLS=1 is set, generates absolute GitHub URLs instead of
+relative paths. This is used during PyPI package builds to ensure links work
+correctly on PyPI's README display. Requires being on a git tag when this
+environment variable is set.
+
+Usage:
+    # Normal usage (relative URLs for GitHub):
+    python test/print-ci-yml-ref.py mdcmd
+
+    # PyPI build (absolute URLs, must be on a tag):
+    README_ABSOLUTE_URLS=1 python test/print-ci-yml-ref.py mdcmd
+"""
 
 import sys
 from pathlib import Path
@@ -90,9 +103,9 @@ def main():
     lines = find_step_lines()
     readme_lines = find_readme_lines(tool)
 
-    # Check env var for absolute URLs (for PyPI builds)
-    if os.getenv("BMDF_ABSOLUTE_URLS"):
-        # Check if we're on a tag
+    # When publishing to PyPI, we need absolute URLs since PyPI doesn't resolve
+    # relative GitHub paths. This requires being on a tag to ensure stable URLs.
+    if os.getenv("README_ABSOLUTE_URLS"):
         import subprocess
         try:
             result = subprocess.run(
@@ -101,17 +114,21 @@ def main():
                 text=True,
                 check=True
             )
-            tag = result.stdout.strip()
-            ref = tag if tag else "main"
+            ref = result.stdout.strip()
+            if not ref:
+                print("ERROR: README_ABSOLUTE_URLS=1 but not on a tag", file=sys.stderr)
+                sys.exit(1)
         except subprocess.CalledProcessError:
-            ref = "main"
+            print("ERROR: README_ABSOLUTE_URLS=1 but not on a tag", file=sys.stderr)
+            sys.exit(1)
 
+        # Generate absolute GitHub URLs using the tag as ref (for PyPI)
         base_url = f"https://github.com/runsascoded/mdcmd/blob/{ref}"
         ci_path = f"{base_url}/.github/workflows/ci.yml"
         # Use the plain view with line numbers for PyPI too
         readme_base = f"{base_url}/README.md?plain=1"
     else:
-        # Use relative URLs by default
+        # Use relative URLs for normal GitHub viewing
         ci_path = ".github/workflows/ci.yml"
         readme_base = "README.md?plain=1"
 

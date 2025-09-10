@@ -48,6 +48,10 @@ jobs:
       run: git fetch origin tag ${{ github.ref_name }} --force
     - uses: astral-sh/setup-uv@v4
     - run: uv python install 3.12
+    - name: Install mdcmd for README processing
+      run: uv tool install .
+    - name: Process README with absolute URLs
+      run: README_ABSOLUTE_URLS=1 mdcmd
     - name: Build package
       run: uvx --from build pyproject-build --outdir dist
     - name: Publish to PyPI
