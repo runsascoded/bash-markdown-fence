@@ -3,28 +3,6 @@ revision = 3
 requires-python = ">=3.10"
 
 [[package]]
-name = "bmdf"
-version = "0.6.2"
-source = { editable = "." }
-dependencies = [
-    { name = "click" },
-    { name = "utz" },
-]
-
-[package.optional-dependencies]
-test = [
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "click", specifier = ">=8" },
-    { name = "pytest", marker = "extra == 'test'" },
-    { name = "utz", specifier = ">=0.19.1" },
-]
-provides-extras = ["test"]
-
-[[package]]
 name = "click"
 version = "8.2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -65,6 +43,28 @@ sdist = { url = "https://files.pythonhosted.org/packages/f2/97/ebf4da567aa6827c9
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2c/e1/e6716421ea10d38022b952c159d5161ca1193197fb744506875fbb87ea7b/iniconfig-2.1.0-py3-none-any.whl", hash = "sha256:9deba5723312380e77435581c6bf4935c94cbfab9b1ed33ef8d238ea168eb760", size = 6050, upload-time = "2025-03-19T20:10:01.071Z" },
 ]
+
+[[package]]
+name = "mdcmd"
+version = "0.7.1"
+source = { editable = "." }
+dependencies = [
+    { name = "click" },
+    { name = "utz" },
+]
+
+[package.optional-dependencies]
+test = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "click", specifier = ">=8" },
+    { name = "pytest", marker = "extra == 'test'" },
+    { name = "utz", specifier = ">=0.19.1" },
+]
+provides-extras = ["test"]
 
 [[package]]
 name = "packaging"
