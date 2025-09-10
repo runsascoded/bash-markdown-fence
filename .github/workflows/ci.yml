@@ -54,8 +54,17 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
       run: |
         uvx twine upload dist/*
+    - name: Get tag message
+      id: tag
+      run: |
+        TAG_MSG=$(git tag -l --format='%(contents:body)' ${{ github.ref_name }})
+        echo "message<<EOF" >> $GITHUB_OUTPUT
+        echo "$TAG_MSG" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
         files: dist/*
+        body: |
+          ${{ steps.tag.outputs.message }}
         generate_release_notes: true
